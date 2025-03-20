@@ -1,5 +1,5 @@
 #include "globals.hpp"
-int N = 64;
+int N = 1024;
 int L = N * N;
 int W = N;
 int H = N;
