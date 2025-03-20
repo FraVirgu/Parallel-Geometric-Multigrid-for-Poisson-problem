@@ -1,0 +1,7 @@
+-  implement CG
+
+- convergence of e_h = u - x_h
+
+- runtime dependence on the N = size
+
+- start to create the multigrid
