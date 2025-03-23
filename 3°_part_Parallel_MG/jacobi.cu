@@ -3,6 +3,7 @@
 #include <iostream>
 #include <chrono>
 
+// Initialize helper functions
 void initialize_zeros_vector(double *x)
 {
     for (int i = 0; i < L; i++)
@@ -10,8 +11,6 @@ void initialize_zeros_vector(double *x)
         x[i] = 0.0;
     }
 }
-
-// Initialize helper functions
 void compute_rhs(double *f)
 {
     double dx = a / W;
@@ -60,7 +59,7 @@ void compute_residual(double *r, double *x, double *f)
         }
     }
 }
-// Jacobi solver
+
 bool JacobiSequential(double *x, double *x_new, double *f, int v, int height, int weight, double h_act, int l)
 {
     for (int i = 0; i < v; i++)
@@ -104,6 +103,27 @@ __global__ void JacobiKernel(double *x, double *x_new, double *f, int height, in
     }
     __syncthreads();
 }
+__global__ void device_compute_residual(double *r, double *x, double *f, int height, int width, double h_act)
+{
+    int x_pos = blockIdx.x * blockDim.x + threadIdx.x;
+    int y_pos = blockIdx.y * blockDim.y + threadIdx.y;
+    int index = y_pos * width + x_pos;
+    double r_out = 0.0;
+
+    if (x_pos != 0 && y_pos != 0 && x_pos < width - 1 && y_pos < height - 1)
+    {
+        r_out = ((h_act * h_act) * f[index] - 4 * x[index] + x[index - 1] + x[index + 1] + x[index - width] + x[index + width]);
+    }
+
+    __syncthreads();
+
+    if (x_pos != 0 && y_pos != 0 && x_pos < width - 1 && y_pos < height - 1)
+    {
+        r[index] = r_out;
+    }
+
+    __syncthreads();
+}
 
 int main()
 {
@@ -119,7 +139,7 @@ int main()
     f = new double[L];
     res = new double[L];
 
-    int v = 21776; // Number of iterations
+    int v = 30000; // Number of iterations
 
     // Initialize host-side data
     initialize_zeros_vector(x);
@@ -169,15 +189,23 @@ int main()
     if (tmp % 2 == 0)
     {
         compute_residual(res, d_output, f);
-        std::cout << "Residual norm: " << vector_norm(res) << std::endl;
+        device_compute_residual<<<numBlocks, threadsPerBlock>>>(d_res, d_output, d_f, H, W, h);
+        cudaDeviceSynchronize();
+        std::cout << "sequential Residual norm: " << vector_norm(res) << std::endl;
+        std::cout << "device Residual norm: " << vector_norm(d_res) << std::endl;
     }
     else
     {
         compute_residual(res, d_x, f);
+        device_compute_residual<<<numBlocks, threadsPerBlock>>>(d_res, d_x, d_f, H, W, h);
+        cudaDeviceSynchronize();
         std::cout << "Residual norm: " << vector_norm(res) << std::endl;
+        std::cout << "device Residual norm: " << vector_norm(d_res) << std::endl;
     }
 
     // sequential Jacoby
+    /*
+
     initialize_zeros_vector(res);
     start = std::chrono::high_resolution_clock::now();
     JacobiSequential(x, output, f, v, H, W, h, L);
@@ -186,5 +214,8 @@ int main()
     std::cout << "Sequential Elapsed time: " << elapsed.count() << " s\n";
     compute_residual(res, output, f);
     std::cout << "Residual norm: " << vector_norm(res) << std::endl;
+
+    */
+
     return 0;
 }

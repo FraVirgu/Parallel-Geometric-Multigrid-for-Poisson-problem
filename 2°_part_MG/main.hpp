@@ -96,7 +96,7 @@ void dynamic_compute_residual(double *r, double *x, double *f, int weight, int h
         for (int x_pos = 1; x_pos < weight - 1; x_pos++)
         {
             int index = y * weight + x_pos;
-            r[index] = f[index] - (4 * x[index] - x[index - 1] - x[index + 1] - x[index - weight] - x[index + weight]) / (h_actual * h_actual);
+            r[index] = ((h_actual * h_actual) * f[index] - 4 * x[index] + x[index - 1] + x[index + 1] + x[index - weight] + x[index + weight]);
         }
     }
 }

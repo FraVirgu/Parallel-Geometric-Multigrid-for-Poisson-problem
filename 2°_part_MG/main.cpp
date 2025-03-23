@@ -27,7 +27,7 @@ void MGCall()
     double *smoother_output = new double[L];
     double *f = new double[L];
     double *res = new double[L];
-    int v1 = 50, v2 = 100, level = 0;
+    int v1 = 100, v2 = 200, level = 0;
     initialize_zeros_vector(x);
     initialize_zeros_vector(output);
     initialize_zeros_vector(smoother_output);

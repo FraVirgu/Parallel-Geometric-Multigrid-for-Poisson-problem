@@ -179,6 +179,6 @@ void FMG(int initial_N, double **output, double **x, double **smoother_output, d
     for (int i = 0; i < log2(initial_N) - 1; i++)
     {
         prolungator(output[i], x[i + 1], height[i], weight[i], height[i + 1], weight[i + 1]);
-        MG(output[i + 1], x[i + 1], smoother_output[i + 1], f[i + 1], res[i + 1], 50, 50, 0, n[i + 1], l[i + 1], weight[i + 1], height[i + 1], h_act[i + 1]);
+        MG(output[i + 1], x[i + 1], smoother_output[i + 1], f[i + 1], res[i + 1], 200, 300, 0, n[i + 1], l[i + 1], weight[i + 1], height[i + 1], h_act[i + 1]);
     }
 }
