@@ -3,12 +3,23 @@
 #include <iostream>
 #include <chrono>
 
-// Initialize helper functions
+// #define BLOCK_SIZE (N / 2)
+#define BLOCK_SIZE 8
+
+//  Initialize helper functions
 void initialize_zeros_vector(double *x)
 {
     for (int i = 0; i < L; i++)
     {
         x[i] = 0.0;
+    }
+}
+void initialize_random_vector(double *x)
+{
+
+    for (int i = 0; i < L; i++)
+    {
+        x[i] = i;
     }
 }
 void compute_rhs(double *f)
@@ -59,7 +70,44 @@ void compute_residual(double *r, double *x, double *f)
         }
     }
 }
+void restriction(double *input, double *output, int input_H, int input_W, int output_H, int output_W)
+{
+    double weight[9] = {0.25, 0.5, 0.25, 0.5, 1.0, 0.5, 0.25, 0.5, 0.25};
+    for (int i = 0; i < output_H; i++)
+    {
+        for (int j = 0; j < output_W; j++)
+        {
+            if (i == 0 || i == output_H - 1 || j == 0 || j == output_W - 1) // Enforce boundary condition
+            {
+                output[i * output_W + j] = 0.0;
+            }
+            else
+            {
+                double sum = 0.0;
+                double weight_sum = 0.0;
+                int index_input_x = 2 * j;
+                int index_input_y = 2 * i;
 
+                for (int k = -1; k <= 1; k++)
+                {
+                    for (int l = -1; l <= 1; l++)
+                    {
+                        int x = index_input_x + l;
+                        int y = index_input_y + k;
+
+                        if (x >= 0 && x < input_W && y >= 0 && y < input_H)
+                        {
+                            sum += weight[(k + 1) * 3 + (l + 1)] * input[y * input_W + x];
+                            weight_sum += weight[(k + 1) * 3 + (l + 1)];
+                        }
+                    }
+                }
+
+                output[i * output_W + j] = sum / weight_sum;
+            }
+        }
+    }
+}
 bool JacobiSequential(double *x, double *x_new, double *f, int v, int height, int weight, double h_act, int l)
 {
     for (int i = 0; i < v; i++)
@@ -127,16 +175,22 @@ __global__ void device_compute_residual(double *r, double *x, double *f, int hei
 
 int main()
 {
-    double *x, *output, *smoother_output, *f, *res;
-    double *d_x, *d_output, *d_smoother_output, *d_f, *d_res;
+    double *x, *output, *smoother_output, *f, *f_restr, *res, *matrix_one, *matrix_restr;
+    double *d_x, *d_output, *d_smoother_output, *d_f, *d_f_restr, *d_res, *d_matrix_one, *d_matrix_restr;
 
+    int n_restr = N / 2;
+    int l_restr = n_restr * n_restr;
     size_t bytes = L * sizeof(double);
+    size_t bytes_restr = l_restr * sizeof(double);
 
     // Allocate host memory
     x = new double[L];
     output = new double[L];
     smoother_output = new double[L];
     f = new double[L];
+    matrix_one = new double[L];
+    matrix_restr = new double[l_restr];
+    f_restr = new double[l_restr];
     res = new double[L];
 
     int v = 30000; // Number of iterations
@@ -150,7 +204,10 @@ int main()
     cudaMallocManaged(&d_output, bytes);
     cudaMallocManaged(&d_smoother_output, bytes);
     cudaMallocManaged(&d_f, bytes);
+    cudaMallocManaged(&d_f_restr, bytes_restr);
     cudaMallocManaged(&d_res, bytes);
+    cudaMallocManaged(&d_matrix_one, bytes);
+    cudaMallocManaged(&d_matrix_restr, bytes_restr);
 
     // Initialize data (no cudaMemcpy needed)
     initialize_zeros_vector(x);
@@ -202,7 +259,6 @@ int main()
         std::cout << "Residual norm: " << vector_norm(res) << std::endl;
         std::cout << "device Residual norm: " << vector_norm(d_res) << std::endl;
     }
-
     // sequential Jacoby
     /*
 
