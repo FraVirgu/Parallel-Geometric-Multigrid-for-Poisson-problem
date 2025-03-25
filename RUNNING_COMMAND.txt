@@ -3,6 +3,11 @@ g++ main.cpp globals.cpp -o main
 ./main
 
 
+// CUDA
+nvcc -arch=sm_70 main.cu globals.cpp -o main_cuda
+.
+
+
 // PYTHON 
 python3 plot_res_result.py 
 python3 plot_err_result.py 
