@@ -1,5 +1,12 @@
 #include "main.hpp"
-
+void update_global_parameter(int n)
+{
+    N = n;
+    W = n;
+    H = n;
+    L = n * n;
+    h = 1.0 / (n - 1);
+}
 void cpu_prolungator(double *input, double *output, int input_H, int input_W, int output_H, int output_W)
 {
     double weight[9] = {0.25, 0.5, 0.25, 0.5, 1.0, 0.5, 0.25, 0.5, 0.25};
@@ -135,4 +142,14 @@ void cpu_MG(double *output, double *initial_solution, double *smoother_output, d
 
     // Post-smoothing
     cpu_jacobi(smoother_output, output, f, v2, height, weight, h_actual, l);
+}
+
+void cpu_FMG(int initial_N, double **output, double **x, double **smoother_output, double **f, double **res, int *n, int *l, int *weight, int *height, double *h_act)
+{
+    cpu_jacobi(x[0], output[0], f[0], 2, height[0], weight[0], h_act[0], l[0]);
+    for (int i = 0; i < log2(initial_N) - 1; i++)
+    {
+        cpu_prolungator(output[i], x[i + 1], height[i], weight[i], height[i + 1], weight[i + 1]);
+        cpu_MG(output[i + 1], x[i + 1], smoother_output[i + 1], f[i + 1], res[i + 1], 200, 300, 0, n[i + 1], l[i + 1], weight[i + 1], height[i + 1], h_act[i + 1]);
+    }
 }

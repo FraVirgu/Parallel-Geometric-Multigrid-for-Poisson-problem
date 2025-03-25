@@ -180,8 +180,8 @@ __global__ void prolungator_kernel(const double *__restrict__ input, double *__r
 
 int JacobiCall(double *d_x, double *d_output, double *d_f, int height, int weight, double h_act, int v)
 {
-    int block_size = N / 4;
-    int num_blocks = N / block_size;
+    int block_size = height / 4;
+    int num_blocks = height / block_size;
     dim3 threadsPerBlock(block_size, block_size);
     dim3 numBlocks(num_blocks, num_blocks);
     int tmp;
@@ -189,13 +189,13 @@ int JacobiCall(double *d_x, double *d_output, double *d_f, int height, int weigh
     {
         if (i % 2 == 0)
         {
-            jacobi_kernel<<<numBlocks, threadsPerBlock>>>(d_x, d_output, d_f, H, W, h);
+            jacobi_kernel<<<numBlocks, threadsPerBlock>>>(d_x, d_output, d_f, height, weight, h_act);
             cudaDeviceSynchronize();
             tmp = i;
         }
         else
         {
-            jacobi_kernel<<<numBlocks, threadsPerBlock>>>(d_output, d_x, d_f, H, W, h);
+            jacobi_kernel<<<numBlocks, threadsPerBlock>>>(d_output, d_x, d_f, height, weight, h_act);
             cudaDeviceSynchronize();
             tmp = i;
         }
@@ -206,32 +206,32 @@ int JacobiCall(double *d_x, double *d_output, double *d_f, int height, int weigh
 
 void ResidualCall(double *d_r, double *d_x, double *d_f, int height, int weight, double h_act)
 {
-    int block_size = N / 4;
-    int num_blocks = N / block_size;
+    int block_size = height / 4;
+    int num_blocks = height / block_size;
     dim3 threadsPerBlock(block_size, block_size);
     dim3 numBlocks(num_blocks, num_blocks);
-    device_compute_residual<<<numBlocks, threadsPerBlock>>>(d_r, d_x, d_f, H, W, h);
+    device_compute_residual<<<numBlocks, threadsPerBlock>>>(d_r, d_x, d_f, height, weight, h_act);
     cudaDeviceSynchronize();
 }
 
 void RestrictionCall(double *input, double *output, int input_H, int input_W, int output_H, int output_W, int n_restr)
 {
     // GPU restriction using tiled kernel
-    int block_size_restr = N / 2; // Block size for GPU kernel
+    int block_size_restr = n_restr / 2; // Block size for GPU kernel
     dim3 threadsPerBlock_restr(block_size_restr, block_size_restr);
     dim3 numBlocks_restr((n_restr + block_size_restr - 1) / block_size_restr,
                          (n_restr + block_size_restr - 1) / block_size_restr);
 
     // GPU restriction using basic kernel
     restriction_kernel_basic<<<numBlocks_restr, threadsPerBlock_restr>>>(
-        input, output, H, W, n_restr, n_restr);
+        input, output, input_H, input_H, n_restr, n_restr);
 
     cudaDeviceSynchronize();
 }
 
 void ProlungatorCall(double *input, double *output, int input_H, int input_W, int output_H, int output_W)
 {
-    int block_size_prol = N / 2; // Block size for GPU kernel
+    int block_size_prol = output_H / 2; // Block size for GPU kernel
     dim3 threadsPerBlock_prol(block_size_prol, block_size_prol);
     dim3 numBlocks_prol((output_W + block_size_prol - 1) / block_size_prol,
                         (output_H + block_size_prol - 1) / block_size_prol);
@@ -318,11 +318,12 @@ void MG(double *output, double *initial_solution, double *smoother_output, doubl
         smoother_output[i] += delta_h[i];
     }
 
-    JacobiCall(smoother_output, output, f, v2, height, weight, h_actual);
+    JacobiCall(smoother_output, output, f, height, weight, h_actual, v2);
 }
 
-void MG_CALL()
+void CUDA_MG_CALL()
 {
+    cout << "CUDA MULTIGRID METHOD" << endl;
 
     double *d_output, *d_initial_solution, *d_smoother_output, *d_f, *d_smoother_residual;
     int v1 = 100, v2 = 200;
@@ -358,9 +359,94 @@ void MG_CALL()
     cudaFree(d_smoother_residual);
 }
 
+int FMG(int initial_N, double **output, double **x, double **smoother_output, double **f, double **res, int *n, int *l, int *weight, int *height, double *h_act)
+{
+    int tmp;
+    cpu_jacobi(x[0], output[0], f[0], 2, height[0], weight[0], h_act[0], l[0]);
+    for (int i = 0; i < log2(initial_N) - 1; i++)
+    {
+
+        if (height[i + 1] <= 32)
+        {
+            cpu_prolungator(output[i], x[i + 1], height[i], weight[i], height[i + 1], weight[i + 1]);
+            cpu_MG(output[i + 1], x[i + 1], smoother_output[i + 1], f[i + 1], res[i + 1], 100, 200, 0, n[i + 1], l[i + 1], weight[i + 1], height[i + 1], h_act[i + 1]);
+        }
+        else
+        {
+            ProlungatorCall(output[i], x[i + 1], height[i], weight[i], height[i + 1], weight[i + 1]);
+            MG(output[i + 1], x[i + 1], smoother_output[i + 1], f[i + 1], res[i + 1], 200, 300, 0, n[i + 1], l[i + 1], weight[i + 1], height[i + 1], h_act[i + 1]);
+        }
+
+        tmp = i;
+    }
+
+    return tmp;
+}
+
+void initialize_FG(int initial_N, double **x, double **output, double **smoother_output, double **f, double **res, int *n, int *l, int *weight, int *height, double *h_act)
+{
+
+    int count = 2;
+    for (int i = 0; i < log2(initial_N); i++)
+    {
+        n[i] = count;
+        l[i] = count * count;
+        weight[i] = count;
+        height[i] = count;
+        h_act[i] = 1.0 / (count - 1);
+        update_global_parameter(count);
+        cudaMallocManaged(&x[i], L * sizeof(double));
+        cudaMallocManaged(&output[i], L * sizeof(double));
+        cudaMallocManaged(&smoother_output[i], L * sizeof(double));
+        cudaMallocManaged(&f[i], L * sizeof(double));
+        cudaMallocManaged(&res[i], L * sizeof(double));
+        initialize_zeros_vector(x[i]);
+        initialize_zeros_vector(output[i]);
+        initialize_zeros_vector(smoother_output[i]);
+        initialize_zeros_vector(res[i]);
+        compute_rhs(f[i]);
+        count = count * 2;
+    }
+}
+void CUDA_FMG_CALL()
+{
+    cout << "\nCUDA FULL MULTRIGRID METHOD" << endl;
+    double **x, **output, **smoother_output, **f, **res;
+    int *n, *l, *weight, *height;
+    double *h_act;
+    int initial_N = N;
+    double initial_H = H;
+    int initial_L = L;
+    auto start_FMG = chrono::high_resolution_clock::now();
+    cudaMallocManaged(&x, static_cast<int>(log2(N)) * sizeof(double *));
+    cudaMallocManaged(&output, static_cast<int>(log2(N)) * sizeof(double *));
+    cudaMallocManaged(&smoother_output, static_cast<int>(log2(N)) * sizeof(double *));
+    cudaMallocManaged(&f, static_cast<int>(log2(N)) * sizeof(double *));
+    cudaMallocManaged(&res, static_cast<int>(log2(N)) * sizeof(double *));
+    cudaMallocManaged(&n, static_cast<int>(log2(N)) * sizeof(int));
+    cudaMallocManaged(&l, static_cast<int>(log2(N)) * sizeof(int));
+    cudaMallocManaged(&weight, static_cast<int>(log2(N)) * sizeof(int));
+    cudaMallocManaged(&height, static_cast<int>(log2(N)) * sizeof(int));
+    cudaMallocManaged(&h_act, static_cast<int>(log2(N)) * sizeof(double));
+
+    initialize_FG(initial_N, x, output, smoother_output, f, res, n, l, weight, height, h_act);
+
+    int tmp = FMG(initial_N, output, x, smoother_output, f, res, n, l, weight, height, h_act);
+    auto end_FMG = chrono::high_resolution_clock::now();
+    cout << "FMG time: " << chrono::duration_cast<chrono::milliseconds>(end_FMG - start_FMG).count() << "ms" << endl;
+
+    tmp++;
+    double *residual_FMG = new double[initial_L];
+    dynamic_compute_residual(residual_FMG, output[tmp], f[tmp], n[tmp], n[tmp], h_act[tmp]);
+    double norm = dynamic_compute_vector_norm(residual_FMG, n[tmp] * n[tmp]);
+    cout << "Residual norm: " << norm << endl;
+}
+
 int main()
 {
-    MG_CALL();
-
+    double *random_gpu_array;
+    cudaMallocManaged(&random_gpu_array, sizeof(double));
+    CUDA_MG_CALL();
+    CUDA_FMG_CALL();
     return 0;
 }

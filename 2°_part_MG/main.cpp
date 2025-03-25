@@ -46,6 +46,7 @@ void MGCall()
 void FMgCall()
 {
     cout << "\nFULL MULTIGRID METHOD" << endl;
+    auto start_FMG = chrono::high_resolution_clock::now();
     double **x = new double *[static_cast<int>(log2(N))];
     double **output = new double *[static_cast<int>(log2(N))];
     double **smoother_output = new double *[static_cast<int>(log2(N))];
@@ -58,7 +59,6 @@ void FMgCall()
     double *h_act = new double[static_cast<int>(log2(N))];
     int initial_N = N;
 
-    auto start_FMG = chrono::high_resolution_clock::now();
     initialize_FG(initial_N, x, output, smoother_output, f, res, n, l, weight, height, h_act);
     FMG(initial_N, output, x, smoother_output, f, res, n, l, weight, height, h_act);
     auto end_FMG = chrono::high_resolution_clock::now();

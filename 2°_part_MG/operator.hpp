@@ -79,7 +79,7 @@ void restriction(double *input, double *output, int input_H, int input_W, int ou
 }
 
 // Multigrid solver
-void MG(double *output, double *initial_solution, double *smoother_output, double *f, double *smoother_residual, int v1, int v2, int level, int n, int l, int weight, int height, double h_actual, int alfa = 1)
+void MG(double *output, double *initial_solution, double *smoother_output, double *f, double *smoother_residual, int v1, int v2, int level, int n, int l, int weight, int height, double h_actual, int alfa = 2)
 {
     // !!! NB :
     // In MG the output is the first parameter, in Jacibi2 the output is the second parameter ( not well written )

@@ -89,6 +89,18 @@ double vector_norm(double *f)
     return sqrt(sum); // Square root of sum
 }
 
+double dynamic_compute_vector_norm(double *f, int l)
+{
+    double sum = 0.0;
+    sum = 0.0;
+    for (int i = 0; i < l; i++)
+    {
+        sum += f[i] * f[i]; // Sum of squares
+    }
+
+    return sqrt(sum); // Square root of sum
+}
+
 // Multigrid solver helper functions
 void dynamic_compute_residual(double *r, double *x, double *f, int weight, int height, double h_actual)
 {
