@@ -5,6 +5,8 @@
 #include <cmath>
 #include "globals.hpp"
 #include <chrono>
+#include <fstream>
+#include <sys/stat.h>
 using namespace std;
 
 // Jacobi solver
@@ -130,6 +132,60 @@ void dynamic_compute_rhs(double *f, int weight, int height)
                 f[y * weight + x] = factor * sin(p * M_PI * x_val / a) * sin(q * M_PI * y_val / a);
             }
         }
+    }
+}
+void create_directory_if_not_exists(const std::string &path)
+{
+    struct stat info;
+    if (stat(path.c_str(), &info) != 0)
+    {
+        mkdir(path.c_str(), 0777);
+    }
+}
+void save_timings_to_file(std::vector<std::pair<int, double>> &timings_cg, std::vector<std::pair<int, double>> &timings_MG, std::vector<std::pair<int, double>> &timings_FMG)
+{
+    create_directory_if_not_exists("OUTPUT_RESULT");
+
+    std::ofstream file_cg("OUTPUT_RESULT/timings_cg.txt");
+    if (file_cg.is_open())
+    {
+        for (const auto &timing : timings_cg)
+        {
+            file_cg << timing.first << " " << timing.second << "\n";
+        }
+        file_cg.close();
+    }
+    else
+    {
+        std::cerr << "Unable to open file for writing Conjugate Gradient timings.\n";
+    }
+
+    std::ofstream file_MG("OUTPUT_RESULT/timings_MG.txt");
+    if (file_MG.is_open())
+    {
+        for (const auto &timing : timings_MG)
+        {
+            file_MG << timing.first << " " << timing.second << "\n";
+        }
+        file_MG.close();
+    }
+    else
+    {
+        std::cerr << "Unable to open file for writing Multigrid timings.\n";
+    }
+
+    std::ofstream file_FMG("OUTPUT_RESULT/timings_FMG.txt");
+    if (file_FMG.is_open())
+    {
+        for (const auto &timing : timings_FMG)
+        {
+            file_FMG << timing.first << " " << timing.second << "\n";
+        }
+        file_FMG.close();
+    }
+    else
+    {
+        std::cerr << "Unable to open file for writing Full Multigrid timings.\n";
     }
 }
 

@@ -79,7 +79,7 @@ void restriction(double *input, double *output, int input_H, int input_W, int ou
 }
 
 // Multigrid solver
-void MG(double *output, double *initial_solution, double *smoother_output, double *f, double *smoother_residual, int v1, int v2, int level, int n, int l, int weight, int height, double h_actual, int alfa = 2)
+void MG(double *output, double *initial_solution, double *smoother_output, double *f, double *smoother_residual, int v1, int v2, int level, int n, int l, int weight, int height, double h_actual, int alfa = 1)
 {
     // !!! NB :
     // In MG the output is the first parameter, in Jacibi2 the output is the second parameter ( not well written )
@@ -173,12 +173,12 @@ void initialize_FG(int initial_N, double **x, double **output, double **smoother
     }
 }
 
-void FMG(int initial_N, double **output, double **x, double **smoother_output, double **f, double **res, int *n, int *l, int *weight, int *height, double *h_act)
+void FMG(int initial_N, double **output, double **x, double **smoother_output, double **f, double **res, int *n, int *l, int *weight, int *height, double *h_act, int v1, int v2)
 {
     Jacobi(x[0], output[0], f[0], 2, height[0], weight[0], h_act[0], l[0]);
     for (int i = 0; i < log2(initial_N) - 1; i++)
     {
         prolungator(output[i], x[i + 1], height[i], weight[i], height[i + 1], weight[i + 1]);
-        MG(output[i + 1], x[i + 1], smoother_output[i + 1], f[i + 1], res[i + 1], 200, 300, 0, n[i + 1], l[i + 1], weight[i + 1], height[i + 1], h_act[i + 1]);
+        MG(output[i + 1], x[i + 1], smoother_output[i + 1], f[i + 1], res[i + 1], v1, v2, 0, n[i + 1], l[i + 1], weight[i + 1], height[i + 1], h_act[i + 1]);
     }
 }

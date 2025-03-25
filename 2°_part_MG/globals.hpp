@@ -10,3 +10,4 @@ extern double p;
 extern double q;
 extern bool fix_iteration;
 extern int number_fixed_iteration;
+extern int v1, v2;
