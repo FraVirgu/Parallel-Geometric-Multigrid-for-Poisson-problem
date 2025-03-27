@@ -1,5 +1,21 @@
 #include "operator.hpp"
 
+void save_solution_to_file(double *x, int length)
+{
+    std::ofstream file("solution.txt");
+    if (!file.is_open())
+    {
+        std::cerr << "Error: Could not open file solution.txt for writing." << std::endl;
+        return;
+    }
+    for (int i = 0; i < length; ++i)
+    {
+        file << x[i] << std::endl;
+    }
+    file.close();
+    std::cout << "Solution saved to solution.txt" << std::endl;
+}
+
 void JacobiCall()
 {
     cout << "JACOBI METHOD" << endl;
@@ -19,7 +35,7 @@ void JacobiCall()
     cout << "Residual norm: " << vector_norm(res) << endl;
 }
 
-auto MGCall()
+double MGCall()
 {
     cout << "\nMULTIGRID METHOD" << endl;
     double *x = new double[L];
@@ -35,8 +51,9 @@ auto MGCall()
     int level = 0;
     auto start_MG = chrono::high_resolution_clock::now();
     MG(output, x, smoother_output, f, res, v1, v2, level, N, L, W, H, h);
+
     auto end_MG = chrono::high_resolution_clock::now();
-    auto duration = chrono::duration_cast<chrono::milliseconds>(end_MG - start_MG).count();
+    double duration = static_cast<double>(chrono::duration_cast<chrono::milliseconds>(end_MG - start_MG).count());
     cout << "Multigrid time: " << chrono::duration_cast<chrono::milliseconds>(end_MG - start_MG).count() << "ms" << endl;
     initialize_zeros_vector(res);
     compute_residual(res, output, f);
@@ -45,7 +62,7 @@ auto MGCall()
     return duration;
 }
 
-auto FMgCall()
+double FMgCall()
 {
     cout << "\nFULL MULTIGRID METHOD" << endl;
 
@@ -64,17 +81,16 @@ auto FMgCall()
     initialize_FG(initial_N, x, output, smoother_output, f, res, n, l, weight, height, h_act);
     auto start_FMG = chrono::high_resolution_clock::now();
     FMG(initial_N, output, x, smoother_output, f, res, n, l, weight, height, h_act, v1, v2);
-    auto end_FMG = chrono::high_resolution_clock::now();
-    auto duration = chrono::duration_cast<chrono::milliseconds>(end_FMG - start_FMG).count();
 
-    cout
-        << "FMG time: " << chrono::duration_cast<chrono::milliseconds>(end_FMG - start_FMG).count() << "ms" << endl;
+    auto end_FMG = chrono::high_resolution_clock::now();
+    double duration = static_cast<double>(chrono::duration_cast<chrono::milliseconds>(end_FMG - start_FMG).count());
+
     compute_residual(res[static_cast<int>(log2(N)) - 1], output[static_cast<int>(log2(N)) - 1], f[static_cast<int>(log2(N)) - 1]);
     cout << "Residual norm: " << vector_norm(res[static_cast<int>(log2(N)) - 1]) << endl;
     return duration;
 }
 
-auto ConiugateGradientCall()
+double ConiugateGradientCall()
 {
     double *x = new double[L];
     double *x_tmp = new double[L];
@@ -94,8 +110,9 @@ auto ConiugateGradientCall()
     cout << "\nCG:" << endl;
     auto start_CG = chrono::high_resolution_clock::now();
     bool result = conjugate_gradient(x, f, res, p_d, Ap_d, number_iteration_performed, residual_reached);
+    save_solution_to_file(x, L);
     auto end_CG = chrono::high_resolution_clock::now();
-    auto duration = chrono::duration_cast<chrono::milliseconds>(end_CG - start_CG).count();
+    double duration = static_cast<double>(chrono::duration_cast<chrono::milliseconds>(end_CG - start_CG).count());
     cout << "CG time: " << chrono::duration_cast<chrono::milliseconds>(end_CG - start_CG).count() << "ms" << endl;
     std::cout << "Residual norm: " << *residual_reached << std::endl;
     return duration;
@@ -104,7 +121,7 @@ auto ConiugateGradientCall()
 vector<int> n_initialization()
 {
     vector<int> n;
-    for (int i = 20; i <= N; i = i + 40)
+    for (int i = 2; i <= N; i = i * 2)
     {
         n.push_back(i);
     }
@@ -115,26 +132,33 @@ int main()
 {
     vector<int> n = n_initialization();
     /*
-     vector<int> n;
-     n.push_back(N
-    );*/
+vector<int> n;
+    n.push_back(N);
+
+    */
 
     std::vector<std::pair<int, double>> timings_CG;
     std::vector<std::pair<int, double>> timings_MG;
     std::vector<std::pair<int, double>> timings_FMG;
 
+    std::vector<std::pair<int, double>> residual_CG;
+    std::vector<std::pair<int, double>> residual_MG;
+    std::vector<std::pair<int, double>> residual_FMG;
+
     for (int i = 0; i < n.size(); i++)
     {
         update_global_parameter(n[i]);
-        auto duration_CG = ConiugateGradientCall();
-        auto duration_MG = MGCall();
-        auto duration_FMG = FMgCall();
+        cout << "\n-------------------    N : " << n[i] << endl;
+        double duration_CG = ConiugateGradientCall();
+        double duration_MG = MGCall();
+        double duration_FMG = FMgCall();
 
-        timings_CG.push_back(std::make_pair(N, duration_CG));
-        timings_MG.push_back(std::make_pair(N, duration_MG));
-        timings_FMG.push_back(std::make_pair(N, duration_FMG));
+        int current_N = n[i]; // Ensure N is updated correctly
+        timings_CG.push_back(std::make_pair(current_N, duration_CG));
+        timings_MG.push_back(std::make_pair(current_N, duration_MG));
+        timings_FMG.push_back(std::make_pair(current_N, duration_FMG));
     }
-
+    // cout << "timig_CG[3].N: " << timings_CG.at(3).first << " timig_CG[3].double: " << timings_CG.at(3).second << endl;
     save_timings_to_file(timings_CG, timings_MG, timings_FMG);
 
     return 0;
