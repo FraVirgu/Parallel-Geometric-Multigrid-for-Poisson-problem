@@ -153,7 +153,6 @@ void initialize_FG(int initial_N, double **x, double **output, double **smoother
     int count = 2;
     for (int i = 0; i < log2(initial_N); i++)
     {
-        int var = count + 1;
         n[i] = count;
         l[i] = count * count;
         weight[i] = count;

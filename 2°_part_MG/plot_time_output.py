@@ -59,8 +59,6 @@ plt.plot(sizes_fmg, times_fmg, label="Full Multigrid (v1=v2=5)", marker='s')
 plt.xscale('log')  # Log scale for problem size
 plt.yscale('log')  # Log scale for time
 
-
-
 plt.xlabel("Problem Size (N)")
 plt.ylabel("Time (seconds)")
 plt.title("Computation Time vs Problem Size for Iterative Methods (Log-Log Scale)")
