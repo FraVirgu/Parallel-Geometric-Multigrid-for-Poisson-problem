@@ -1,7 +1,7 @@
 #include "head.hpp"
 
 // Perform Jacobi iterations
-bool Jacobian(double *x, double *x_new, double *f, double *r, double *residual_reached, int *number_iteration_performed, vector<double> *residuals, vector<double> *errors, double *x_true)
+bool Jacobian(double *x, double *x_new, double *f, double *r, double *residual_reached, int *number_iteration_performed, vector<double> *residuals, vector<double> *errors, double *x_true, double *final_error_norm)
 {
     double norm_residual;
     double norm_error;
@@ -48,6 +48,7 @@ bool Jacobian(double *x, double *x_new, double *f, double *r, double *residual_r
             if (norm_residual < EPSILON)
             {
                 *number_iteration_performed = i;
+                *final_error_norm = norm_error;
                 return true;
             }
 
@@ -55,6 +56,7 @@ bool Jacobian(double *x, double *x_new, double *f, double *r, double *residual_r
             if (norm_error < EPSILON)
             {
                 *number_iteration_performed = i;
+                *final_error_norm = norm_error;
                 return true;
             }
 
@@ -98,6 +100,7 @@ bool Jacobian(double *x, double *x_new, double *f, double *r, double *residual_r
                 x[j] = x_new[j];
             }
         }
+        *final_error_norm = norm_error;
         return true;
     }
 }
