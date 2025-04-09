@@ -223,7 +223,7 @@ void save_error_to_file(std::vector<double> *error_jacobian, std::vector<double>
     }
 }
 
-void save_timings_to_file(std::vector<std::pair<int, double>> &timings_jacobi, std::vector<std::pair<int, double>> &timings_gs, std::vector<std::pair<int, double>> &timings_steepest, std::vector<std::pair<int, double>> &timings_cg)
+void save_timings_to_file(std::vector<std::pair<int, double> > &timings_jacobi, std::vector<std::pair<int, double> > &timings_gs, std::vector<std::pair<int, double> > &timings_steepest, std::vector<std::pair<int, double> > &timings_cg)
 {
     create_directory_if_not_exists("OUTPUT_RESULT");
 
@@ -284,7 +284,7 @@ void save_timings_to_file(std::vector<std::pair<int, double>> &timings_jacobi, s
     }
 }
 
-void save_error_h_to_file(std::vector<std::pair<int, double>> &error_j, std::vector<std::pair<int, double>> &error_gs, std::vector<std::pair<int, double>> &error_steepest, std::vector<std::pair<int, double>> &error_cg)
+void save_error_h_to_file(std::vector<std::pair<int, double> > &error_j, std::vector<std::pair<int, double> > &error_gs, std::vector<std::pair<int, double> > &error_steepest, std::vector<std::pair<int, double> > &error_cg)
 {
     create_directory_if_not_exists("OUTPUT_RESULT");
 
@@ -415,7 +415,7 @@ void singleRun()
     delete residuals_gs;
 }
 
-void timeSingleRun(std::vector<std::pair<int, double>> &timings_jacobi, std::vector<std::pair<int, double>> &timings_gs, std::vector<std::pair<int, double>> &timings_steepest, std::vector<std::pair<int, double>> &timings_cg)
+void timeSingleRun(std::vector<std::pair<int, double> > &timings_jacobi, std::vector<std::pair<int, double> > &timings_gs, std::vector<std::pair<int, double> > &timings_steepest, std::vector<std::pair<int, double> > &timings_cg)
 {
     std::vector<double> *residuals_jacobian = new std::vector<double>();
     std::vector<double> *residuals_steepest = new std::vector<double>();
@@ -478,7 +478,7 @@ void timeSingleRun(std::vector<std::pair<int, double>> &timings_jacobi, std::vec
     delete residuals_gs;
 }
 
-void timeSingleRun_H(std::vector<std::pair<int, double>> &error_h_j)
+void timeSingleRun_H(std::vector<std::pair<int, double> > &error_h_j)
 {
     std::vector<double> *residuals_jacobian = new std::vector<double>();
     std::vector<double> *residuals_steepest = new std::vector<double>();
@@ -521,15 +521,15 @@ void timeSingleRun_H(std::vector<std::pair<int, double>> &error_h_j)
 void multipleRun()
 {
     vector<int> n = n_initialization();
-    std::vector<std::pair<int, double>> timings_jacobi;
-    std::vector<std::pair<int, double>> timings_gs;
-    std::vector<std::pair<int, double>> timings_steepest;
-    std::vector<std::pair<int, double>> timings_cg;
+    std::vector<std::pair<int, double> > timings_jacobi;
+    std::vector<std::pair<int, double> > timings_gs;
+    std::vector<std::pair<int, double> > timings_steepest;
+    std::vector<std::pair<int, double> > timings_cg;
 
-    std::vector<std::pair<int, double>> error_j;
-    std::vector<std::pair<int, double>> error_gs;
-    std::vector<std::pair<int, double>> error_steepest;
-    std::vector<std::pair<int, double>> error_cg;
+    std::vector<std::pair<int, double> > error_j;
+    std::vector<std::pair<int, double> > error_gs;
+    std::vector<std::pair<int, double> > error_steepest;
+    std::vector<std::pair<int, double> > error_cg;
 
     for (int i = 0; i < n.size(); i++)
     {
@@ -545,15 +545,15 @@ void multipleRun()
 void multipleRun_h()
 {
     vector<int> n = n_initialization();
-    std::vector<std::pair<int, double>> timings_jacobi;
-    std::vector<std::pair<int, double>> timings_gs;
-    std::vector<std::pair<int, double>> timings_steepest;
-    std::vector<std::pair<int, double>> timings_cg;
+    std::vector<std::pair<int, double> > timings_jacobi;
+    std::vector<std::pair<int, double> > timings_gs;
+    std::vector<std::pair<int, double> > timings_steepest;
+    std::vector<std::pair<int, double> > timings_cg;
 
-    std::vector<std::pair<int, double>> error_j;
-    std::vector<std::pair<int, double>> error_gs;
-    std::vector<std::pair<int, double>> error_steepest;
-    std::vector<std::pair<int, double>> error_cg;
+    std::vector<std::pair<int, double> > error_j;
+    std::vector<std::pair<int, double> > error_gs;
+    std::vector<std::pair<int, double> > error_steepest;
+    std::vector<std::pair<int, double> > error_cg;
 
     fix_iteration = true;
 
