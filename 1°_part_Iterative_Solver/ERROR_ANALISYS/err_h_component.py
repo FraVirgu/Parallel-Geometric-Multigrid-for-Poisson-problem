@@ -21,7 +21,7 @@ def build_matrix_A(N_inner):
 
 def compute_rhs(N_inner, a, p, q):
     dx = a / (N_inner + 1)
-    factor = (np.pi ** 2 / (a * a)) * (p * p + q * q)
+    factor = -1 * (np.pi ** 2 / (a * a)) * (p * p + q * q) # - laplac(u) = f
 
     f = np.zeros((N_inner, N_inner))
     for j in range(N_inner):
@@ -51,7 +51,7 @@ for N in N_values:
 
 
     h = 1.0 / (N_inner + 1)
-    error = h * np.linalg.norm(u_exact_inner + u_h)
+    error =  np.linalg.norm(u_exact_inner - u_h)
 
 
     errors.append(error)
