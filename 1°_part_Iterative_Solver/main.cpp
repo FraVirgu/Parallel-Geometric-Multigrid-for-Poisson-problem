@@ -2,9 +2,9 @@
 
 int main()
 {
-    quadratic_convergence_jacobi();
+    //quadratic_convergence_jacobi();
     // singleRun();
     // multipleRun();
-    // multipleRun_h();
+    multipleRun_h();
     return 0;
 }
