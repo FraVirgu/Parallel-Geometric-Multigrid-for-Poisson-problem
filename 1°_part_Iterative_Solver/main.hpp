@@ -223,7 +223,7 @@ void save_error_to_file(std::vector<double> *error_jacobian, std::vector<double>
     }
 }
 
-void save_timings_to_file(std::vector<std::pair<int, double> > &timings_jacobi, std::vector<std::pair<int, double> > &timings_gs, std::vector<std::pair<int, double> > &timings_steepest, std::vector<std::pair<int, double> > &timings_cg)
+void save_timings_to_file(std::vector<std::pair<int, double>> &timings_jacobi, std::vector<std::pair<int, double>> &timings_gs, std::vector<std::pair<int, double>> &timings_steepest, std::vector<std::pair<int, double>> &timings_cg)
 {
     create_directory_if_not_exists("OUTPUT_RESULT");
 
@@ -284,7 +284,7 @@ void save_timings_to_file(std::vector<std::pair<int, double> > &timings_jacobi, 
     }
 }
 
-void save_error_h_to_file(std::vector<std::pair<int, double> > &error_j, std::vector<std::pair<int, double> > &error_gs, std::vector<std::pair<int, double> > &error_steepest, std::vector<std::pair<int, double> > &error_cg)
+void save_error_h_to_file(std::vector<std::pair<int, double>> &error_j, std::vector<std::pair<int, double>> &error_gs, std::vector<std::pair<int, double>> &error_steepest, std::vector<std::pair<int, double>> &error_cg)
 {
     create_directory_if_not_exists("OUTPUT_RESULT");
 
@@ -345,7 +345,7 @@ void save_error_h_to_file(std::vector<std::pair<int, double> > &error_j, std::ve
     }
 }
 
-void save_true_error_h_to_file(std::vector<std::pair<int, double> > &error_true_j, std::vector<std::pair<int, double> > &error_true_gs, std::vector<std::pair<int, double> > &error_true_steepest, std::vector<std::pair<int, double> > &error_true_cg)
+void save_true_error_h_to_file(std::vector<std::pair<int, double>> &error_true_j, std::vector<std::pair<int, double>> &error_true_gs, std::vector<std::pair<int, double>> &error_true_steepest, std::vector<std::pair<int, double>> &error_true_cg)
 {
     create_directory_if_not_exists("OUTPUT_RESULT");
 
@@ -409,7 +409,7 @@ void save_true_error_h_to_file(std::vector<std::pair<int, double> > &error_true_
 vector<int> n_initialization()
 {
     vector<int> n;
-    for (int i = 2; i < 140; i*=2)
+    for (int i = 8; i <= 128; i *= 2)
     {
         n.push_back(i);
     }
@@ -480,7 +480,7 @@ void singleRun()
 
 void quadratic_convergence_jacobi()
 {
-    
+
     std::vector<int> N_values;
     for (int i = 16; i <= 64; i *= 2) // Powers of 2 grid resolutions
     {
@@ -512,8 +512,8 @@ void quadratic_convergence_jacobi()
         compute_laplacian(x_true, compute_function);
 
         JacobiCall(x, x_tmp, res, f, residual_reached, number_iteration_performed, residuals_jacobian, error_jacobian, x_true, final_error_norm);
-    
-        double h = 1.0 / (N - 1);  // grid spacing
+
+        double h = 1.0 / (N - 1); // grid spacing
         h_values.push_back(h);
         error_norms.push_back(final_error_norm->back());
 
@@ -545,7 +545,7 @@ void quadratic_convergence_jacobi()
     cout << "Convergence data saved to jacobi_convergence.csv" << endl;
 }
 
-void timeSingleRun(std::vector<std::pair<int, double> > &timings_jacobi, std::vector<std::pair<int, double> > &timings_gs, std::vector<std::pair<int, double> > &timings_steepest, std::vector<std::pair<int, double> > &timings_cg)
+void timeSingleRun(std::vector<std::pair<int, double>> &timings_jacobi, std::vector<std::pair<int, double>> &timings_gs, std::vector<std::pair<int, double>> &timings_steepest, std::vector<std::pair<int, double>> &timings_cg)
 {
     std::vector<double> *residuals_jacobian = new std::vector<double>();
     std::vector<double> *residuals_steepest = new std::vector<double>();
@@ -610,61 +610,19 @@ void timeSingleRun(std::vector<std::pair<int, double> > &timings_jacobi, std::ve
     delete residuals_gs;
 }
 
-void timeSingleRun_H(std::vector<std::pair<int, double> > &error_h_j, std::vector<std::pair<int, double> > &error_true_j)
-{
-    std::vector<double> *residuals_jacobian = new std::vector<double>();
-    std::vector<double> *residuals_steepest = new std::vector<double>();
-    std::vector<double> *residuals_gs = new std::vector<double>();
-    std::vector<double> *residuals_cg = new std::vector<double>();
-
-    std::vector<double> *error_jacobian = new std::vector<double>();
-    std::vector<double> *error_steepest = new std::vector<double>();
-    std::vector<double> *error_gs = new std::vector<double>();
-    std::vector<double> *error_cg = new std::vector<double>();
-
-    double *x = new double[L];
-    double *x_tmp = new double[L];
-    double *x_true = new double[L];
-    double *f = new double[L];
-    double *res = new double[L];
-    double *p_d = new double[L];
-    double *Ap_d = new double[L];
-    int *number_iteration_performed = new int;
-    double *residual_reached = new double;
-
-    std::vector<double> *final_error_norm = new std::vector<double>();
-
-    compute_rhs(f);
-    compute_laplacian(x_true, compute_function);
-    // Jacobi
-    JacobiCall(x, x_tmp, res, f, residual_reached, number_iteration_performed, residuals_jacobian, error_jacobian, x_true, final_error_norm);
-    error_h_j.push_back(std::make_pair(N, error_jacobian->back()));
-    error_true_j.push_back(std::make_pair(N, final_error_norm->back()));
-
-    free(x);
-    free(x_tmp);
-    free(f);
-    free(number_iteration_performed);
-    free(residual_reached);
-
-    delete residuals_jacobian;
-    delete residuals_steepest;
-    delete residuals_gs;
-}
-
 // Run the simulation for multiple N values and save the time execution for each method
 void multipleRun()
 {
     vector<int> n = n_initialization();
-    std::vector<std::pair<int, double> > timings_jacobi;
-    std::vector<std::pair<int, double> > timings_gs;
-    std::vector<std::pair<int, double> > timings_steepest;
-    std::vector<std::pair<int, double> > timings_cg;
+    std::vector<std::pair<int, double>> timings_jacobi;
+    std::vector<std::pair<int, double>> timings_gs;
+    std::vector<std::pair<int, double>> timings_steepest;
+    std::vector<std::pair<int, double>> timings_cg;
 
-    std::vector<std::pair<int, double> > error_j;
-    std::vector<std::pair<int, double> > error_gs;
-    std::vector<std::pair<int, double> > error_steepest;
-    std::vector<std::pair<int, double> > error_cg;
+    std::vector<std::pair<int, double>> error_j;
+    std::vector<std::pair<int, double>> error_gs;
+    std::vector<std::pair<int, double>> error_steepest;
+    std::vector<std::pair<int, double>> error_cg;
 
     for (int i = 0; i < n.size(); i++)
     {
@@ -676,24 +634,18 @@ void multipleRun()
     save_timings_to_file(timings_jacobi, timings_gs, timings_steepest, timings_cg);
 }
 
-// Run the simulation for multiple N values and save the time execution for each method
 void multipleRun_h()
 {
     vector<int> n = n_initialization();
-    std::vector<std::pair<int, double> > timings_jacobi;
-    std::vector<std::pair<int, double> > timings_gs;
-    std::vector<std::pair<int, double> > timings_steepest;
-    std::vector<std::pair<int, double> > timings_cg;
+    std::vector<std::pair<int, double>> timings_jacobi;
+    std::vector<std::pair<int, double>> timings_gs;
+    std::vector<std::pair<int, double>> timings_steepest;
+    std::vector<std::pair<int, double>> timings_cg;
 
-    std::vector<std::pair<int, double> > error_j;
-    std::vector<std::pair<int, double> > error_gs;
-    std::vector<std::pair<int, double> > error_steepest;
-    std::vector<std::pair<int, double> > error_cg;
-
-    std::vector<std::pair<int, double> > error_true_j;
-    std::vector<std::pair<int, double> > error_true_gs;
-    std::vector<std::pair<int, double> > error_true_steepest;
-    std::vector<std::pair<int, double> > error_true_cg;
+    std::vector<std::pair<int, double>> error_j;
+    std::vector<std::pair<int, double>> error_gs;
+    std::vector<std::pair<int, double>> error_steepest;
+    std::vector<std::pair<int, double>> error_cg;
 
     fix_iteration = true;
 
@@ -701,9 +653,8 @@ void multipleRun_h()
     {
         parameter_initialization(n[i], 100000, 1e-4, 1.0, 1.0, 1.0);
         cout << "\t\t\t\t\t\t\t\t\t   N: " << N << endl;
-        timeSingleRun_H(error_j, error_true_j);
+        timeSingleRun(timings_jacobi, timings_gs, timings_steepest, timings_cg);
     }
 
-    save_error_h_to_file(error_j, error_gs, error_steepest, error_cg);
-    save_true_error_h_to_file(error_true_j, error_true_gs, error_true_steepest, error_true_cg);
+    save_timings_to_file(timings_jacobi, timings_gs, timings_steepest, timings_cg);
 }
