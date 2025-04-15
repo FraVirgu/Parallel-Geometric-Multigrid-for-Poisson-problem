@@ -409,7 +409,7 @@ void save_true_error_h_to_file(std::vector<std::pair<int, double> > &error_true_
 vector<int> n_initialization()
 {
     vector<int> n;
-    for (int i = 0; i < 140; i = i + 20)
+    for (int i = 2; i < 140; i*=2)
     {
         n.push_back(i);
     }
