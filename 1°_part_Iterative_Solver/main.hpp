@@ -14,13 +14,13 @@ double compute_function(double x, double y)
     return sin(p * M_PI * x / a) * sin(q * M_PI * y / a);
 }
 
-void JacobiCall(double *x, double *x_new, double *r, double *f, double *residual_reached, int *number_iteration_performed, std::vector<double> *residuals_jacobian, std::vector<double> *error_jacobian, double *x_true, std::vector<double> *final_error_norm)
+void JacobiCall(double *x, double *x_new, double *r, double *f, double *residual_reached, int *number_iteration_performed, std::vector<double> *residuals_jacobian, std::vector<double> *error_jacobian, double *x_true)
 {
     initialize_zeros_vector(x);
     initialize_zeros_vector(x_new); // Ensure x_tmp is also initialized
     initialize_zeros_vector(r);
     cout << "_____  Jacobian:" << endl;
-    bool result = Jacobian(x, x_new, f, r, residual_reached, number_iteration_performed, residuals_jacobian, error_jacobian, x_true, final_error_norm);
+    bool result = Jacobian(x, x_new, f, r, residual_reached, number_iteration_performed, residuals_jacobian, error_jacobian, x_true);
 
     if (result)
     {
@@ -345,67 +345,6 @@ void save_error_h_to_file(std::vector<std::pair<int, double>> &error_j, std::vec
     }
 }
 
-void save_true_error_h_to_file(std::vector<std::pair<int, double>> &error_true_j, std::vector<std::pair<int, double>> &error_true_gs, std::vector<std::pair<int, double>> &error_true_steepest, std::vector<std::pair<int, double>> &error_true_cg)
-{
-    create_directory_if_not_exists("OUTPUT_RESULT");
-
-    std::ofstream file_jacobian("OUTPUT_RESULT/true_errors_jacobian.txt");
-    if (file_jacobian.is_open())
-    {
-        for (const auto &error : error_true_j)
-        {
-            file_jacobian << error.first << " " << error.second << "\n";
-        }
-        file_jacobian.close();
-    }
-    else
-    {
-        std::cerr << "Unable to open file for writing Jacobian errors.\n";
-    }
-
-    std::ofstream file_steepest("OUTPUT_RESULT/true_errors_steepest_descent.txt");
-    if (file_steepest.is_open())
-    {
-        for (const auto &error : error_true_steepest)
-        {
-            file_steepest << error.first << " " << error.second << "\n";
-        }
-        file_steepest.close();
-    }
-    else
-    {
-        std::cerr << "Unable to open file for writing Steepest Descent errors.\n";
-    }
-
-    std::ofstream file_gs("OUTPUT_RESULT/true_errors_gs.txt");
-    if (file_gs.is_open())
-    {
-        for (const auto &error : error_true_gs)
-        {
-            file_gs << error.first << " " << error.second << "\n";
-        }
-        file_gs.close();
-    }
-    else
-    {
-        std::cerr << "Unable to open file for writing Gauss-Seidel errors.\n";
-    }
-
-    std::ofstream file_cg("OUTPUT_RESULT/true_errors_cg.txt");
-    if (file_cg.is_open())
-    {
-        for (const auto &error : error_true_cg)
-        {
-            file_cg << error.first << " " << error.second << "\n";
-        }
-        file_cg.close();
-    }
-    else
-    {
-        std::cerr << "Unable to open file for writing Conjugate Gradient errors.\n";
-    }
-}
-
 vector<int> n_initialization()
 {
     vector<int> n;
@@ -460,7 +399,7 @@ void singleRun()
     compute_rhs(f);
     compute_laplacian(x_true, compute_function);
 
-    JacobiCall(x, x_tmp, res, f, residual_reached, number_iteration_performed, residuals_jacobian, error_jacobian, x_true, final_error_norm);
+    JacobiCall(x, x_tmp, res, f, residual_reached, number_iteration_performed, residuals_jacobian, error_jacobian, x_true);
     SteepestDescentCall(x, f, res, number_iteration_performed, residual_reached, residuals_steepest, error_steepest, x_true);
     GaussSeidelCall(x, f, res, residual_reached, number_iteration_performed, residuals_gs, error_gs, x_true);
     ConiugateGradientCall(x, f, res, p_d, Ap_d, residual_reached, number_iteration_performed, residuals_cg, error_cg, x_true);
@@ -511,7 +450,7 @@ void quadratic_convergence_jacobi()
         compute_rhs(f);
         compute_laplacian(x_true, compute_function);
 
-        JacobiCall(x, x_tmp, res, f, residual_reached, number_iteration_performed, residuals_jacobian, error_jacobian, x_true, final_error_norm);
+        JacobiCall(x, x_tmp, res, f, residual_reached, number_iteration_performed, residuals_jacobian, error_jacobian, x_true);
 
         double h = 1.0 / (N - 1); // grid spacing
         h_values.push_back(h);
@@ -545,7 +484,7 @@ void quadratic_convergence_jacobi()
     cout << "Convergence data saved to jacobi_convergence.csv" << endl;
 }
 
-void timeSingleRun(std::vector<std::pair<int, double>> &timings_jacobi, std::vector<std::pair<int, double>> &timings_gs, std::vector<std::pair<int, double>> &timings_steepest, std::vector<std::pair<int, double>> &timings_cg)
+void timeSingleRun(std::vector<std::pair<int, double>> &timings_jacobi, std::vector<std::pair<int, double>> &timings_gs, std::vector<std::pair<int, double>> &timings_steepest, std::vector<std::pair<int, double>> &timings_cg, std::vector<std::pair<int, double>> &error_grid_jacobian)
 {
     std::vector<double> *residuals_jacobian = new std::vector<double>();
     std::vector<double> *residuals_steepest = new std::vector<double>();
@@ -573,11 +512,11 @@ void timeSingleRun(std::vector<std::pair<int, double>> &timings_jacobi, std::vec
     compute_laplacian(x_true, compute_function);
     // Jacobi
     auto start_jacobi = std::chrono::high_resolution_clock::now();
-    JacobiCall(x, x_tmp, res, f, residual_reached, number_iteration_performed, residuals_jacobian, error_jacobian, x_true, final_error_norm);
+    JacobiCall(x, x_tmp, res, f, residual_reached, number_iteration_performed, residuals_jacobian, error_jacobian, x_true);
     auto end_jacobi = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_jacobi = end_jacobi - start_jacobi;
     timings_jacobi.push_back(std::make_pair(N, elapsed_jacobi.count()));
-
+    error_grid_jacobian.push_back(std::make_pair(N, error_jacobian->back()));
     // Steepest Descent
     auto start_steepest = std::chrono::high_resolution_clock::now();
     SteepestDescentCall(x, f, res, number_iteration_performed, residual_reached, residuals_steepest, error_steepest, x_true);
@@ -608,6 +547,8 @@ void timeSingleRun(std::vector<std::pair<int, double>> &timings_jacobi, std::vec
     delete residuals_jacobian;
     delete residuals_steepest;
     delete residuals_gs;
+
+    delete error_jacobian;
 }
 
 // Run the simulation for multiple N values and save the time execution for each method
@@ -628,33 +569,9 @@ void multipleRun()
     {
         parameter_initialization(n[i], 100000, 1e-4, 1.0, 1.0, 1.0);
         cout << "\t\t\t\t\t\t\t\t\t   N: " << N << endl;
-        timeSingleRun(timings_jacobi, timings_gs, timings_steepest, timings_cg);
+        timeSingleRun(timings_jacobi, timings_gs, timings_steepest, timings_cg, error_j);
     }
 
     save_timings_to_file(timings_jacobi, timings_gs, timings_steepest, timings_cg);
-}
-
-void multipleRun_h()
-{
-    vector<int> n = n_initialization();
-    std::vector<std::pair<int, double>> timings_jacobi;
-    std::vector<std::pair<int, double>> timings_gs;
-    std::vector<std::pair<int, double>> timings_steepest;
-    std::vector<std::pair<int, double>> timings_cg;
-
-    std::vector<std::pair<int, double>> error_j;
-    std::vector<std::pair<int, double>> error_gs;
-    std::vector<std::pair<int, double>> error_steepest;
-    std::vector<std::pair<int, double>> error_cg;
-
-    fix_iteration = true;
-
-    for (int i = 0; i < n.size(); i++)
-    {
-        parameter_initialization(n[i], 100000, 1e-4, 1.0, 1.0, 1.0);
-        cout << "\t\t\t\t\t\t\t\t\t   N: " << N << endl;
-        timeSingleRun(timings_jacobi, timings_gs, timings_steepest, timings_cg);
-    }
-
-    save_timings_to_file(timings_jacobi, timings_gs, timings_steepest, timings_cg);
+    save_error_h_to_file(error_j, error_gs, error_steepest, error_cg);
 }

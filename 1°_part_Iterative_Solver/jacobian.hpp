@@ -1,7 +1,7 @@
 #include "head.hpp"
 
 // Perform Jacobi iterations
-bool Jacobian(double *x, double *x_new, double *f, double *r, double *residual_reached, int *number_iteration_performed, vector<double> *residuals, vector<double> *errors, double *x_true, vector<double> *final_error_norm)
+bool Jacobian(double *x, double *x_new, double *f, double *r, double *residual_reached, int *number_iteration_performed, vector<double> *residuals, vector<double> *errors, double *x_true)
 {
     double norm_residual;
     double norm_error;
@@ -15,7 +15,7 @@ bool Jacobian(double *x, double *x_new, double *f, double *r, double *residual_r
     //  Compute initial error
     compute_difference(err, x, x_true);
     norm_error = vector_norm(err) / vector_norm(x_true);
-    errors->push_back(norm_error);
+
     int n_iteration = 0;
 
     if (fix_iteration)
@@ -45,14 +45,11 @@ bool Jacobian(double *x, double *x_new, double *f, double *r, double *residual_r
         compute_difference(err, x_new, x_true);
         norm_error = vector_norm(err) / vector_norm(x_true);
 
-        errors->push_back(norm_error);
-
         //  Convergence check (residual)
         if (norm_residual < EPSILON)
         {
             *number_iteration_performed = i;
-            final_error_norm->push_back(norm_error);
-            error_grid_jacobian = norm_error;
+            errors->push_back(norm_error);
             return true;
         }
 
@@ -60,8 +57,7 @@ bool Jacobian(double *x, double *x_new, double *f, double *r, double *residual_r
         if (norm_error < EPSILON)
         {
             *number_iteration_performed = i;
-            final_error_norm->push_back(norm_error);
-            error_grid_jacobian = norm_error;
+            errors->push_back(norm_error);
             return true;
         }
 
@@ -71,6 +67,6 @@ bool Jacobian(double *x, double *x_new, double *f, double *r, double *residual_r
             x[j] = x_new[j];
         }
     }
-    error_grid_jacobian = norm_error;
+    errors->push_back(norm_error);
     return false;
 }
