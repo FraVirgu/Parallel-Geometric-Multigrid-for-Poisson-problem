@@ -223,7 +223,7 @@ void save_error_to_file(std::vector<double> *error_jacobian, std::vector<double>
     }
 }
 
-void save_timings_to_file(std::vector<std::pair<int, double>> &timings_jacobi, std::vector<std::pair<int, double>> &timings_gs, std::vector<std::pair<int, double>> &timings_steepest, std::vector<std::pair<int, double>> &timings_cg)
+void save_timings_to_file(std::vector<std::pair<int, double> > &timings_jacobi, std::vector<std::pair<int, double> > &timings_gs, std::vector<std::pair<int, double> > &timings_steepest, std::vector<std::pair<int, double> > &timings_cg)
 {
     create_directory_if_not_exists("OUTPUT_RESULT");
 
@@ -284,7 +284,7 @@ void save_timings_to_file(std::vector<std::pair<int, double>> &timings_jacobi, s
     }
 }
 
-void save_error_h_to_file(std::vector<std::pair<int, double>> &error_j, std::vector<std::pair<int, double>> &error_gs, std::vector<std::pair<int, double>> &error_steepest, std::vector<std::pair<int, double>> &error_cg)
+void save_error_h_to_file(std::vector<std::pair<int, double> > &error_j, std::vector<std::pair<int, double> > &error_gs, std::vector<std::pair<int, double> > &error_steepest, std::vector<std::pair<int, double> > &error_cg)
 {
     create_directory_if_not_exists("OUTPUT_RESULT");
 
@@ -348,7 +348,7 @@ void save_error_h_to_file(std::vector<std::pair<int, double>> &error_j, std::vec
 vector<int> n_initialization()
 {
     vector<int> n;
-    for (int i = 8; i <= 128; i *= 2)
+    for (int i = 8; i <= 64; i *= 2)
     {
         n.push_back(i);
     }
@@ -484,7 +484,7 @@ void quadratic_convergence_jacobi()
     cout << "Convergence data saved to jacobi_convergence.csv" << endl;
 }
 
-void timeSingleRun(std::vector<std::pair<int, double>> &timings_jacobi, std::vector<std::pair<int, double>> &timings_gs, std::vector<std::pair<int, double>> &timings_steepest, std::vector<std::pair<int, double>> &timings_cg, std::vector<std::pair<int, double>> &error_grid_jacobian)
+void timeSingleRun(std::vector<std::pair<int, double> > &timings_jacobi, std::vector<std::pair<int, double> > &timings_gs, std::vector<std::pair<int, double> > &timings_steepest, std::vector<std::pair<int, double> > &timings_cg, std::vector<std::pair<int, double> > &error_grid_jacobian)
 {
     std::vector<double> *residuals_jacobian = new std::vector<double>();
     std::vector<double> *residuals_steepest = new std::vector<double>();
@@ -505,8 +505,6 @@ void timeSingleRun(std::vector<std::pair<int, double>> &timings_jacobi, std::vec
     double *Ap_d = new double[L];
     int *number_iteration_performed = new int;
     double *residual_reached = new double;
-
-    std::vector<double> *final_error_norm = new std::vector<double>();
 
     compute_rhs(f);
     compute_laplacian(x_true, compute_function);
@@ -555,15 +553,15 @@ void timeSingleRun(std::vector<std::pair<int, double>> &timings_jacobi, std::vec
 void multipleRun()
 {
     vector<int> n = n_initialization();
-    std::vector<std::pair<int, double>> timings_jacobi;
-    std::vector<std::pair<int, double>> timings_gs;
-    std::vector<std::pair<int, double>> timings_steepest;
-    std::vector<std::pair<int, double>> timings_cg;
+    std::vector<std::pair<int, double> > timings_jacobi;
+    std::vector<std::pair<int, double> > timings_gs;
+    std::vector<std::pair<int, double> > timings_steepest;
+    std::vector<std::pair<int, double> > timings_cg;
 
-    std::vector<std::pair<int, double>> error_j;
-    std::vector<std::pair<int, double>> error_gs;
-    std::vector<std::pair<int, double>> error_steepest;
-    std::vector<std::pair<int, double>> error_cg;
+    std::vector<std::pair<int, double> > error_j;
+    std::vector<std::pair<int, double> > error_gs;
+    std::vector<std::pair<int, double> > error_steepest;
+    std::vector<std::pair<int, double> > error_cg;
 
     for (int i = 0; i < n.size(); i++)
     {
