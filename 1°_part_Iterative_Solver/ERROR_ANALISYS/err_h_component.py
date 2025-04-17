@@ -14,14 +14,15 @@ def build_matrix_A(N_inner):
     main_diag = 4 * np.ones(N_inner)
     off_diag = -1 * np.ones(N_inner - 1)
     T = diags([off_diag, main_diag, off_diag], [-1, 0, 1])
+    T_b = diags([off_diag, np.zeros(N_inner), off_diag], [-1, 0, 1])
     I = eye(N_inner)
-
-    A = kron(I, T) + kron(T, I)
+    
+    A = kron(T, I) + kron(I, T_b)  
     return factor * A
 
 def compute_rhs(N_inner, a, p, q):
     dx = a / (N_inner + 1)
-    factor = -1 * (np.pi ** 2 / (a * a)) * (p * p + q * q) # - laplac(u) = f
+    factor = (np.pi ** 2 / (a * a)) * (p * p + q * q) # - laplac(u) = f
 
     f = np.zeros((N_inner, N_inner))
     for j in range(N_inner):
@@ -32,11 +33,11 @@ def compute_rhs(N_inner, a, p, q):
 
     return f.flatten()
 # --- Main convergence analysis
-N_values = [4, 8, 16, 32,64, 128]
+N_values = [4, 8, 16, 32, 64]
 errors = []
 
 for N in N_values:
-    N_inner = N - 2  # Exclude boundary points
+    N_inner = N - 1  # Exclude boundary points
     A = build_matrix_A(N_inner)
     b = compute_rhs(N_inner, a=1.0, p=1, q=1)
 
@@ -50,11 +51,12 @@ for N in N_values:
     u_exact_inner = u(X, Y, p=1, q=1, a=1.0).flatten()
 
 
-    h = 1.0 / (N_inner + 1)
-    error =  np.linalg.norm(u_exact_inner - u_h)
+    # Compute L2 error
+    error =  u_h - u_exact_inner
+    error_l2 = np.linalg.norm(error) / np.sqrt(len(error))
 
 
-    errors.append(error)
+    errors.append(error_l2)
 
 
 # --- Plot convergence graph
@@ -66,4 +68,14 @@ plt.title("Convergence of Numerical Solution")
 plt.grid(True, which="both", ls="--")
 plt.legend()
 plt.savefig("convergence_plot.png")
+
+# --- Plot convergence graph (linear scale)
+plt.figure()
+plt.plot(N_values, errors, 'o-', label=r'$\|u - u_h\|$')
+plt.xlabel("Grid size N")
+plt.ylabel("L2 Error")
+plt.title("Discretization Error (Linear Scale)")
+plt.grid(True, which="both", ls="--")
+plt.legend()
+plt.savefig("convergence_plot_linear.png")
 
