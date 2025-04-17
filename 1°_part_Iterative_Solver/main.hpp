@@ -288,7 +288,7 @@ void save_error_h_to_file(std::vector<std::pair<int, double> > &error_j, std::ve
 {
     create_directory_if_not_exists("OUTPUT_RESULT");
 
-    std::ofstream file_jacobian("OUTPUT_RESULT/h_errors_jacobian.txt");
+    std::ofstream file_jacobian("OUTPUT_RESULT/h_errors_jacobi.txt");
     if (file_jacobian.is_open())
     {
         for (const auto &error : error_j)
@@ -348,7 +348,7 @@ void save_error_h_to_file(std::vector<std::pair<int, double> > &error_j, std::ve
 vector<int> n_initialization()
 {
     vector<int> n;
-    for (int i = 8; i <= 64; i *= 2)
+    for (int i = 8; i <= 32; i *= 2)
     {
         n.push_back(i);
     }
@@ -417,72 +417,6 @@ void singleRun()
     delete residuals_gs;
 }
 
-void quadratic_convergence_jacobi()
-{
-
-    std::vector<int> N_values;
-    for (int i = 16; i <= 64; i *= 2) // Powers of 2 grid resolutions
-    {
-        N_values.push_back(i);
-    }
-    std::vector<double> h_values;
-    std::vector<double> error_norms;
-
-    for (int N_loop : N_values)
-    {
-        update_grid_parameters(N_loop);
-
-        cout << "Running Jacobi for N = " << N << endl;
-        double *x = new double[L];
-        double *x_tmp = new double[L];
-        double *x_true = new double[L];
-        double *f = new double[L];
-        double *res = new double[L];
-
-        std::vector<double> *residuals_jacobian = new std::vector<double>();
-        std::vector<double> *error_jacobian = new std::vector<double>();
-
-        std::vector<double> *final_error_norm = new std::vector<double>();
-
-        int *number_iteration_performed = new int;
-        double *residual_reached = new double;
-
-        compute_rhs(f);
-        compute_laplacian(x_true, compute_function);
-
-        JacobiCall(x, x_tmp, res, f, residual_reached, number_iteration_performed, residuals_jacobian, error_jacobian, x_true);
-
-        double h = 1.0 / (N - 1); // grid spacing
-        h_values.push_back(h);
-        error_norms.push_back(final_error_norm->back());
-
-        delete[] x;
-        delete[] x_tmp;
-        delete[] f;
-        delete[] res;
-        delete[] x_true;
-        delete number_iteration_performed;
-        delete residual_reached;
-        delete final_error_norm;
-        delete residuals_jacobian;
-        delete error_jacobian;
-    }
-    // Save the data to a TXT file
-    ofstream file("OUTPUT_RESULT/jacobi_convergence.txt");
-    if (!file.is_open())
-    {
-        cerr << "Error opening output file!" << endl;
-    }
-
-    file << "h,error_norm\n";
-    for (size_t i = 0; i < h_values.size(); ++i)
-    {
-        file << h_values[i] << "," << error_norms[i] << "\n";
-    }
-    file.close();
-
-    cout << "Convergence data saved to jacobi_convergence.csv" << endl;
-}
 
 void timeSingleRun(std::vector<std::pair<int, double> > &timings_jacobi, std::vector<std::pair<int, double> > &timings_gs, std::vector<std::pair<int, double> > &timings_steepest, std::vector<std::pair<int, double> > &timings_cg, std::vector<std::pair<int, double> > &error_grid_jacobian)
 {
@@ -565,7 +499,7 @@ void multipleRun()
 
     for (int i = 0; i < n.size(); i++)
     {
-        parameter_initialization(n[i], 100000, 1e-4, 1.0, 1.0, 1.0);
+        parameter_initialization(n[i], 1000000000, 1e-4, 1.0, 1.0, 1.0);
         cout << "\t\t\t\t\t\t\t\t\t   N: " << N << endl;
         timeSingleRun(timings_jacobi, timings_gs, timings_steepest, timings_cg, error_j);
     }
