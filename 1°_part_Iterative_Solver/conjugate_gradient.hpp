@@ -28,8 +28,10 @@ void compute_inner_product_with_A(double *r, double *result)
 
 bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap_d, int *number_iteration_performed, double *residual_reached, vector<double> *residuals, std::vector<double> *error_cg, double *x_true)
 {
-    double alpha, beta, norm_residual, res_tmp, err_tmp, norm_error;
+    double alpha, beta, res_tmp, norm_residual, err_tmp, norm_error;
     double *err = new double[L];
+
+    initialize_zeros_vector(x);
     // Compute initial residual: r = f - A * x
     compute_residual(r, x, f);
     norm_residual = vector_norm(r);
@@ -52,9 +54,9 @@ bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap
     {
 
         // Compute p_d^(k)^Tr^(k)
-        double rTr = compute_inner_product(p_d, r); // Store r^T * r
+        double rTr = compute_inner_product(r, r); // Store r^T * r
         // Compute A * p
-        compute_inner_product_with_A(r, Ap_d);
+        compute_inner_product_with_A(p_d, Ap_d); 
 
         // Compute step size: alpha = (r^T * r) / (p^T * A * p)
         double pAp = compute_inner_product(p_d, Ap_d);
@@ -78,6 +80,15 @@ bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap
         // Compute the error
         compute_difference(err, x, x_true);
         norm_error = vector_norm(err) / vector_norm(x_true);
+
+        // Debugging output
+        if (i % 10 == 0 || i == MAX_ITERATION - 1) {
+            std::cout << "[CG] Iteration " << i
+                    << " | Residual Norm: " << norm_residual
+                    << " | Norm of x_true: " << vector_norm(x_true)
+                    << " | Error Norm: " << vector_norm(err)
+                    << " | Relative Error: " << norm_error << std::endl;
+        }
 
         // Update residual reached
         if (norm_residual <= res_tmp)
@@ -103,8 +114,8 @@ bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap
         }
 
         // Compute new beta: beta = (r[k+1]^T * r[k+1]) / (r[k]^T * r[k])
-        double rTr_new = compute_inner_product(Ap_d, r);
-        beta = rTr_new / pAp;
+        double rTr_new = compute_inner_product(r, r);
+        beta = rTr_new / rTr;
 
         // Update search direction: p[k+1] = r[k+1] + beta * p[k]
         for (int j = 0; j < L; j++)
