@@ -68,8 +68,8 @@ void initialize_zeros_vector(double *x)
 }
 void compute_rhs(double *f)
 {
-    double dx = a / W;
-    double dy = a / H;
+    double dx = h;
+    double dy = h;
     double factor = (M_PI * M_PI / (a * a)) * (p * p + q * q);
 
     for (int y = 0; y < H; y++)
@@ -80,14 +80,14 @@ void compute_rhs(double *f)
             double y_val = y * dy;
 
             // Apply Dirichlet boundary condition: f = 0 at the boundaries
-            if (x == 0 || x == W - 1 || y == 0 || y == H - 1)
-            {
-                f[y * W + x] = 0.0;
-            }
-            else
-            {
-                f[y * W + x] = factor * sin(p * M_PI * x_val / a) * sin(q * M_PI * y_val / a);
-            }
+            //if (x == 0 || x == W - 1 || y == 0 || y == H - 1)
+            //{
+            //    f[y * W + x] = 0.0;
+            //}
+            //else
+            //{
+            f[y * W + x] = factor * sin(p * M_PI * x_val / a) * sin(q * M_PI * y_val / a);
+            //}
         }
     }
 }
@@ -131,8 +131,8 @@ void compute_laplacian(double *f, double (*func)(double, double))
 // Fill array with exact solution u(x, y) = sin(p pi x / a) * sin(q pi y / a)
 void compute_exact_solution(double *u, double (*func)(double, double))
 {
-    double dx = a / W;
-    double dy = a / H;
+    double dx = h;
+    double dy = h;
 
     for (int y = 0; y < H; y++)
     {
