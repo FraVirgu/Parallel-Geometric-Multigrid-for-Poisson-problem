@@ -122,9 +122,12 @@ bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap
             residuals->push_back(norm_residual);
             *residual_reached = norm_residual;
         }
-
-        err_tmp = norm_error;
-        error_cg->push_back(norm_error);
+        // update error reached
+        if (norm_error <= err_tmp)
+        {
+            err_tmp = norm_error;
+            error_cg->push_back(norm_error);
+        }
 
         // Convergence check
         if (norm_residual < EPSILON)
