@@ -53,7 +53,7 @@ void singleRun()
 /**
  * @brief Same as singleRun : runs iterative solvers and records their residuals and errors.
  */
-void timeSingleRun(std::vector<std::pair<int, double>> &timings_jacobi, std::vector<std::pair<int, double>> &timings_gs, std::vector<std::pair<int, double>> &timings_steepest, std::vector<std::pair<int, double>> &timings_cg, std::vector<std::pair<int, double>> &error_grid_jacobian, std::vector<std::pair<int, double>> &error_grid_steepest, std::vector<std::pair<int, double>> &error_grid_gs, std::vector<std::pair<int, double>> &error_grid_cg)
+void timeSingleRun(std::vector<std::pair<int, double> > &timings_jacobi, std::vector<std::pair<int, double> > &timings_gs, std::vector<std::pair<int, double> > &timings_steepest, std::vector<std::pair<int, double> > &timings_cg, std::vector<std::pair<int, double> > &error_grid_jacobian, std::vector<std::pair<int, double> > &error_grid_steepest, std::vector<std::pair<int, double> > &error_grid_gs, std::vector<std::pair<int, double> > &error_grid_cg)
 {
     std::vector<double> *residuals_jacobian = new std::vector<double>();
     std::vector<double> *residuals_steepest = new std::vector<double>();
@@ -134,15 +134,15 @@ void timeSingleRun(std::vector<std::pair<int, double>> &timings_jacobi, std::vec
 void multipleRun()
 {
     vector<int> n = n_initialization();
-    std::vector<std::pair<int, double>> timings_jacobi;
-    std::vector<std::pair<int, double>> timings_gs;
-    std::vector<std::pair<int, double>> timings_steepest;
-    std::vector<std::pair<int, double>> timings_cg;
+    std::vector<std::pair<int, double> > timings_jacobi;
+    std::vector<std::pair<int, double> > timings_gs;
+    std::vector<std::pair<int, double> > timings_steepest;
+    std::vector<std::pair<int, double> > timings_cg;
 
-    std::vector<std::pair<int, double>> error_j;
-    std::vector<std::pair<int, double>> error_gs;
-    std::vector<std::pair<int, double>> error_steepest;
-    std::vector<std::pair<int, double>> error_cg;
+    std::vector<std::pair<int, double> > error_j;
+    std::vector<std::pair<int, double> > error_gs;
+    std::vector<std::pair<int, double> > error_steepest;
+    std::vector<std::pair<int, double> > error_cg;
 
     for (int i = 0; i < n.size(); i++)
     {

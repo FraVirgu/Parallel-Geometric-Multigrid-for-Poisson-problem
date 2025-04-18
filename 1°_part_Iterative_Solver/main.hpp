@@ -94,7 +94,7 @@ void ConiugateGradientCall(double *x, double *f, double *r, double *p_d, double 
 vector<int> n_initialization()
 {
     vector<int> n;
-    for (int i = 8; i <= 128; i *= 2)
+    for (int i = 8; i <= 64; i *= 2)
     {
         n.push_back(i);
     }
