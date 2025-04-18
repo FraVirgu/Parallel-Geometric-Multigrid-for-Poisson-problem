@@ -1,5 +1,19 @@
 #include "head.hpp"
 
+void enforce_dirichlet_boundary(double *v)
+{
+    for (int y = 0; y < H; y++)
+    {
+        for (int x_pos = 0; x_pos < W; x_pos++)
+        {
+            if (y == 0 || y == H - 1 || x_pos == 0 || x_pos == W - 1)
+            {
+                v[y * W + x_pos] = 0.0;
+            }
+        }
+    }
+}
+
 // Function to compute the standard inner product
 double compute_inner_product(const double *v1, const double *v2)
 {
@@ -21,7 +35,7 @@ void compute_inner_product_with_A(double *r, double *result)
             int index = y * W + x_pos;
 
             // Apply Laplacian operator (A * r) using the same stencil
-            result[index] = -4 * r[index] + r[index - 1] + r[index + 1] + r[index - W] + r[index + W];
+            result[index] = 4 * r[index] - r[index - 1] - r[index + 1] - r[index - W] - r[index + W];
         }
     }
 }
@@ -56,7 +70,7 @@ bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap
         // Compute p_d^(k)^Tr^(k)
         double rTr = compute_inner_product(r, r); // Store r^T * r
         // Compute A * p
-        compute_inner_product_with_A(p_d, Ap_d); 
+        compute_inner_product_with_A(p_d, Ap_d);
 
         // Compute step size: alpha = (r^T * r) / (p^T * A * p)
         double pAp = compute_inner_product(p_d, Ap_d);
@@ -77,18 +91,29 @@ bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap
         // Compute new residual
         norm_residual = vector_norm(r);
 
+        enforce_dirichlet_boundary(x);
+        enforce_dirichlet_boundary(x_true);
+
         // Compute the error
         compute_difference(err, x, x_true);
         norm_error = vector_norm(err) / vector_norm(x_true);
 
         // Debugging output
-        if (i % 10 == 0 || i == MAX_ITERATION - 1) {
-            std::cout << "[CG] Iteration " << i
-                    << " | Residual Norm: " << norm_residual
-                    << " | Norm of x_true: " << vector_norm(x_true)
-                    << " | Error Norm: " << vector_norm(err)
-                    << " | Relative Error: " << norm_error << std::endl;
-        }
+
+        /*
+         double xtxt = compute_inner_product(x, x_true);
+          if (i % 10 == 0 || i == MAX_ITERATION - 1)
+                {
+                    std::cout << "[CG] Iteration " << i
+                              << " | Residual Norm: " << norm_residual
+                              << " | Norm of x_true: " << vector_norm(x_true)
+                              << " | Norm of x: " << vector_norm(x)
+                              << "[DEBUG] x^T x_true = " << xtxt
+                              << " | Error Norm: " << vector_norm(err)
+                              << " | Relative Error: " << norm_error << std::endl;
+                }
+
+        */
 
         // Update residual reached
         if (norm_residual <= res_tmp)
@@ -97,12 +122,9 @@ bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap
             residuals->push_back(norm_residual);
             *residual_reached = norm_residual;
         }
-        // update error reached
-        if (norm_error <= err_tmp)
-        {
-            err_tmp = norm_error;
-            error_cg->push_back(norm_error);
-        }
+
+        err_tmp = norm_error;
+        error_cg->push_back(norm_error);
 
         // Convergence check
         if (norm_residual < EPSILON)

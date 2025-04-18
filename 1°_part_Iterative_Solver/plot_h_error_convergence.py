@@ -32,12 +32,15 @@ results = {}
 for method, filename in methods.items():
     file_path = os.path.join("OUTPUT_RESULT", filename)
     if os.path.exists(file_path):
-        errors = read_errors(file_path)
-        if errors:
-            sizes, error_values = zip(*errors)
-            results[method] = (sizes, error_values)
-        else:
-            print(f"Warning: {method} file is empty or malformed.")
+        try:
+            errors = read_errors(file_path)
+            if errors:
+                sizes, error_values = zip(*errors)
+                results[method] = (sizes, error_values)
+            else:
+                print(f"Warning: {method} file is empty or malformed.")
+        except Exception as e:
+            print(f"Error reading {method} file: {e}")
     else:
         print(f"Warning: File not found for {method}: {file_path}")
 
