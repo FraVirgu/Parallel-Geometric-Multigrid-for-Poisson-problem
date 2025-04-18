@@ -128,5 +128,22 @@ void compute_laplacian(double *f, double (*func)(double, double))
     }
 }
 
+// Fill array with exact solution u(x, y) = sin(p pi x / a) * sin(q pi y / a)
+void compute_exact_solution(double *u, double (*func)(double, double))
+{
+    double dx = a / W;
+    double dy = a / H;
+
+    for (int y = 0; y < H; y++)
+    {
+        for (int x = 0; x < W; x++)
+        {
+            double x_val = x * dx;
+            double y_val = y * dy;
+            u[y * W + x] = func(x_val, y_val);
+        }
+    }
+}
+
 // Add the missing #endif directive
 #endif

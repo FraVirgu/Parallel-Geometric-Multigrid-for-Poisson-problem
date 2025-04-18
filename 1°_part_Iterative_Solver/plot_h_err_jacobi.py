@@ -18,7 +18,7 @@ def read_errors(file_path):
     return errors
 
 # File path
-errors_jacobi_file = os.path.join("OUTPUT_RESULT", "h_errors_jacobian.txt")
+errors_jacobi_file = os.path.join("OUTPUT_RESULT", "h_errors_jacobi.txt")
 
 # Read errors
 errors_jacobi = read_errors(errors_jacobi_file)
