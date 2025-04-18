@@ -1,5 +1,6 @@
 import os
 import matplotlib.pyplot as plt
+import numpy as np
 
 # Define the directory where the plot will be saved
 plot_dir = "PLOT"
@@ -44,6 +45,7 @@ for method, filename in methods.items():
     else:
         print(f"Warning: File not found for {method}: {file_path}")
 
+
 # Print summary for each method
 def print_summary(method, sizes, errors):
     print(f"{method} Method:")
@@ -58,8 +60,11 @@ for method, (sizes, errors) in results.items():
 plt.figure(figsize=(10, 6))
 for method, (sizes, errors) in results.items():
     plt.plot(sizes, errors, label=method)
+    
+plt.plot(sizes, 1/np.array(sizes)**(2), label ="N^2")
 
 plt.yscale("log")
+plt.xscale("log")
 plt.xlabel("Problem Size (N)")
 plt.ylabel("Error Norm (log scale)")
 plt.title("Error Convergence vs Problem Size for All Methods")

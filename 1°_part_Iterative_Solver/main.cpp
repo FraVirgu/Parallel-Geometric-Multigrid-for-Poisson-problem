@@ -53,7 +53,7 @@ void singleRun()
 /**
  * @brief Same as singleRun : runs iterative solvers and records their residuals and errors.
  */
-void timeSingleRun(std::vector<std::pair<int, double>> &timings_jacobi, std::vector<std::pair<int, double>> &timings_gs, std::vector<std::pair<int, double>> &timings_steepest, std::vector<std::pair<int, double>> &timings_cg, std::vector<std::pair<int, double>> &error_grid_jacobian, std::vector<std::pair<int, double>> &error_grid_steepest, std::vector<std::pair<int, double>> &error_grid_gs, std::vector<std::pair<int, double>> &error_grid_cg)
+void timeSingleRun(std::vector<std::pair<int, double> > &timings_jacobi, std::vector<std::pair<int, double> > &timings_gs, std::vector<std::pair<int, double> > &timings_steepest, std::vector<std::pair<int, double> > &timings_cg, std::vector<std::pair<int, double> > &error_grid_jacobian, std::vector<std::pair<int, double> > &error_grid_steepest, std::vector<std::pair<int, double> > &error_grid_gs, std::vector<std::pair<int, double> > &error_grid_cg)
 {
     std::vector<double> *residuals_jacobian = new std::vector<double>();
     std::vector<double> *residuals_steepest = new std::vector<double>();
@@ -76,7 +76,10 @@ void timeSingleRun(std::vector<std::pair<int, double>> &timings_jacobi, std::vec
     double *residual_reached = new double;
 
     compute_rhs(f);
+    //compute_laplacian(f, compute_function);
     compute_exact_solution(x_true, compute_function);
+    /*
+    
     // Jacobi
     auto start_jacobi = std::chrono::high_resolution_clock::now();
     JacobiCall(x, x_tmp, res, f, residual_reached, number_iteration_performed, residuals_jacobian, error_jacobian, x_true);
@@ -100,6 +103,9 @@ void timeSingleRun(std::vector<std::pair<int, double>> &timings_jacobi, std::vec
     std::chrono::duration<double> elapsed_gs = end_gs - start_gs;
     timings_gs.push_back(std::make_pair(N, elapsed_gs.count()));
     error_grid_gs.push_back(std::make_pair(N, error_gs->back()));
+    */
+    
+    
 
     // Conjugate Gradient
     auto start_cg = std::chrono::high_resolution_clock::now();
@@ -132,19 +138,19 @@ void timeSingleRun(std::vector<std::pair<int, double>> &timings_jacobi, std::vec
 void multipleRun()
 {
     vector<int> n = n_initialization();
-    std::vector<std::pair<int, double>> timings_jacobi;
-    std::vector<std::pair<int, double>> timings_gs;
-    std::vector<std::pair<int, double>> timings_steepest;
-    std::vector<std::pair<int, double>> timings_cg;
+    std::vector<std::pair<int, double> > timings_jacobi;
+    std::vector<std::pair<int, double> > timings_gs;
+    std::vector<std::pair<int, double> > timings_steepest;
+    std::vector<std::pair<int, double> > timings_cg;
 
-    std::vector<std::pair<int, double>> error_j;
-    std::vector<std::pair<int, double>> error_gs;
-    std::vector<std::pair<int, double>> error_steepest;
-    std::vector<std::pair<int, double>> error_cg;
+    std::vector<std::pair<int, double> > error_j;
+    std::vector<std::pair<int, double> > error_gs;
+    std::vector<std::pair<int, double> > error_steepest;
+    std::vector<std::pair<int, double> > error_cg;
 
     for (int i = 0; i < n.size(); i++)
     {
-        parameter_initialization(n[i], 1000000, 1e-4, 1.0, 1.0, 1.0);
+        parameter_initialization(n[i], 1000000, 1e-8, 1.0, 1.0, 1.0);
         cout << "\t\t\t\t\t\t\t\t\t   N: " << N << endl;
         timeSingleRun(timings_jacobi, timings_gs, timings_steepest, timings_cg, error_j, error_gs, error_steepest, error_cg);
     }
@@ -155,7 +161,7 @@ void multipleRun()
 
 int main()
 {
-    singleRun();
-    // multipleRun();
+    // singleRun();
+     multipleRun();
     return 0;
 }

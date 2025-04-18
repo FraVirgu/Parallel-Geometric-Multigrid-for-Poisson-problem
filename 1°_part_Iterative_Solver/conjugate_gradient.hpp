@@ -35,7 +35,7 @@ void compute_inner_product_with_A(double *r, double *result)
             int index = y * W + x_pos;
 
             // Apply Laplacian operator (A * r) using the same stencil
-            result[index] = 4 * r[index] - r[index - 1] - r[index + 1] - r[index - W] - r[index + W];
+            result[index] = (4 * r[index] - r[index - 1] - r[index + 1] - r[index - W] - r[index + W]) / (h * h);
         }
     }
 }
@@ -45,7 +45,7 @@ bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap
     double alpha, beta, res_tmp, norm_residual, err_tmp, norm_error;
     double *err = new double[L];
 
-    initialize_zeros_vector(x);
+    initialize_zeros_vector(x); 
     // Compute initial residual: r = f - A * x
     compute_residual(r, x, f);
     norm_residual = vector_norm(r);
@@ -135,6 +135,12 @@ bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap
             *residual_reached = norm_residual;
             *number_iteration_performed = i;
 
+            // compute initial error
+            compute_difference(err, x, x_true);
+            norm_error = vector_norm(err) / vector_norm(x_true);
+            err_tmp = norm_error;
+            error_cg->push_back(norm_error);
+
             return true;
         }
 
@@ -148,6 +154,12 @@ bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap
             p_d[j] = r[j] + beta * p_d[j];
         }
     }
+
+    // compute initial error
+    compute_difference(err, x, x_true);
+    norm_error = vector_norm(err) / vector_norm(x_true);
+    err_tmp = norm_error;
+    error_cg->push_back(norm_error);
 
     return false;
 }

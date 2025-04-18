@@ -133,7 +133,7 @@ void save_error_to_file(std::vector<double> *error_jacobian, std::vector<double>
     }
 }
 
-void save_timings_to_file(std::vector<std::pair<int, double>> &timings_jacobi, std::vector<std::pair<int, double>> &timings_gs, std::vector<std::pair<int, double>> &timings_steepest, std::vector<std::pair<int, double>> &timings_cg)
+void save_timings_to_file(std::vector<std::pair<int, double> > &timings_jacobi, std::vector<std::pair<int, double> > &timings_gs, std::vector<std::pair<int, double> > &timings_steepest, std::vector<std::pair<int, double> > &timings_cg)
 {
     create_directory_if_not_exists("OUTPUT_RESULT");
 
@@ -194,7 +194,7 @@ void save_timings_to_file(std::vector<std::pair<int, double>> &timings_jacobi, s
     }
 }
 
-void save_error_h_to_file(std::vector<std::pair<int, double>> &error_j, std::vector<std::pair<int, double>> &error_gs, std::vector<std::pair<int, double>> &error_steepest, std::vector<std::pair<int, double>> &error_cg)
+void save_error_h_to_file(std::vector<std::pair<int, double> > &error_j, std::vector<std::pair<int, double> > &error_gs, std::vector<std::pair<int, double> > &error_steepest, std::vector<std::pair<int, double> > &error_cg)
 {
     create_directory_if_not_exists("OUTPUT_RESULT");
 

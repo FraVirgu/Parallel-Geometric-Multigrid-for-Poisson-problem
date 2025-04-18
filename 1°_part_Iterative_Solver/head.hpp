@@ -45,7 +45,7 @@ void compute_residual(double *r, double *x, double *f)
         {
             int index = y * W + x_pos;
             // return the normalized residual
-            r[index] = ((h * h) * f[index] - 4 * x[index] + x[index - 1] + x[index + 1] + x[index - W] + x[index + W]);
+            r[index] = (f[index] - (1/(h*h))*(4 * x[index] + x[index - 1] + x[index + 1] + x[index - W] + x[index + W]));
         }
     }
 }

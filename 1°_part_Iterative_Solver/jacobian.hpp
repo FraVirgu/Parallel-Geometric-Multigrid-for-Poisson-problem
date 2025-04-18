@@ -37,7 +37,7 @@ bool Jacobian(double *x, double *x_new, double *f, double *r, double *residual_r
 
         // Compute new residual
         compute_residual(r, x_new, f);
-        norm_residual = vector_norm(r);
+        norm_residual = vector_norm(r)/vector_norm(f);
         residuals->push_back(norm_residual);
         *residual_reached = norm_residual;
 
