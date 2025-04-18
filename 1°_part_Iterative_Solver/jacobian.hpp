@@ -15,6 +15,7 @@ bool Jacobian(double *x, double *x_new, double *f, double *r, double *residual_r
     //  Compute initial error
     compute_difference(err, x, x_true);
     norm_error = vector_norm(err) / vector_norm(x_true);
+    errors->push_back(norm_error);
 
     int n_iteration = 0;
 
