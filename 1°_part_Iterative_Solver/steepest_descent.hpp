@@ -15,7 +15,7 @@ double compute_alpha_opt(double *r)
 
             // Apply Laplacian operator (A * r) using the same stencil
             temp_r = -4 * r[index] + r[index - 1] + r[index + 1] + r[index - W] + r[index + W];
-            denominator += r[index] * temp_r;
+            denominator += r[index] * temp_r / (h * h);
         }
     }
     return numerator / denominator;

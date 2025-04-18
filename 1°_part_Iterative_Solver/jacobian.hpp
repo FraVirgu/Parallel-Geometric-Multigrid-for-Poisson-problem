@@ -9,6 +9,7 @@ bool Jacobian(double *x, double *x_new, double *f, double *r, double *residual_r
 
     //  Compute initial residual
     compute_residual(r, x, f);
+    cout << "initial residual " << vector_norm(r) << endl;
     norm_residual = vector_norm(r); // divide by the norm of the right-hand side
     residuals->push_back(norm_residual);
 
@@ -31,16 +32,15 @@ bool Jacobian(double *x, double *x_new, double *f, double *r, double *residual_r
             for (int x_pos = 1; x_pos < W - 1; x_pos++)
             {
                 int index = y * W + x_pos;
-                x_new[index] = 0.25 * (h * h) *( f[index] + x[index - 1] + x[index + 1] + x[index - W] + x[index + W]);
+                x_new[index] = 0.25 * ((h * h) * (f[index]) + x[index - 1] + x[index + 1] + x[index - W] + x[index + W]);
             }
         }
 
         // Compute new residual
         compute_residual(r, x_new, f);
-        norm_residual = vector_norm(r)/vector_norm(f);
+        norm_residual = vector_norm(r) / vector_norm(f);
         residuals->push_back(norm_residual);
         *residual_reached = norm_residual;
-
         //  Compute the error
         compute_difference(err, x_new, x_true);
         norm_error = vector_norm(err) / vector_norm(x_true);

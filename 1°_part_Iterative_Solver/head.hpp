@@ -45,7 +45,7 @@ void compute_residual(double *r, double *x, double *f)
         {
             int index = y * W + x_pos;
             // return the normalized residual
-            r[index] = (f[index] - (1/(h*h))*(4 * x[index] + x[index - 1] + x[index + 1] + x[index - W] + x[index + W]));
+            r[index] = (f[index] - (1 / (h * h)) * (4 * x[index] - x[index - 1] - x[index + 1] - x[index - W] - x[index + W]));
         }
     }
 }
@@ -80,11 +80,11 @@ void compute_rhs(double *f)
             double y_val = y * dy;
 
             // Apply Dirichlet boundary condition: f = 0 at the boundaries
-            //if (x == 0 || x == W - 1 || y == 0 || y == H - 1)
+            // if (x == 0 || x == W - 1 || y == 0 || y == H - 1)
             //{
             //    f[y * W + x] = 0.0;
             //}
-            //else
+            // else
             //{
             f[y * W + x] = factor * sin(p * M_PI * x_val / a) * sin(q * M_PI * y_val / a);
             //}
