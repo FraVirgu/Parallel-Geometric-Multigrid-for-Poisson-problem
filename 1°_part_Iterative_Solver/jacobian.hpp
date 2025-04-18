@@ -31,7 +31,7 @@ bool Jacobian(double *x, double *x_new, double *f, double *r, double *residual_r
             for (int x_pos = 1; x_pos < W - 1; x_pos++)
             {
                 int index = y * W + x_pos;
-                x_new[index] = 0.25 * ((h * h * f[index]) + x[index - 1] + x[index + 1] + x[index - W] + x[index + W]);
+                x_new[index] = 0.25 * (h * h) *( f[index] + x[index - 1] + x[index + 1] + x[index - W] + x[index + W]);
             }
         }
 

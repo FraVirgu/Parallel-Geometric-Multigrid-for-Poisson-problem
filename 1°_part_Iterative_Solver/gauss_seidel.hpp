@@ -25,7 +25,7 @@ bool GaussSeidel(double *x, double *f, double *r, double *residual_reached, int 
             for (int x_pos = 1; x_pos < W - 1; x_pos++)
             {
                 int index = y * W + x_pos;
-                x[index] = 0.25 * ((h * h * f[index]) + x[index - 1] + x[index + 1] + x[index - W] + x[index + W]);
+                x[index] = 0.25 * h*h*( f[index] + x[index - 1] + x[index + 1] + x[index - W] + x[index + W]);
             }
         }
 

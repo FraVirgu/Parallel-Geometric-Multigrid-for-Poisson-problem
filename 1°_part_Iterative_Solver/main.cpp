@@ -78,7 +78,6 @@ void timeSingleRun(std::vector<std::pair<int, double> > &timings_jacobi, std::ve
     compute_rhs(f);
     //compute_laplacian(f, compute_function);
     compute_exact_solution(x_true, compute_function);
-    /*
     
     // Jacobi
     auto start_jacobi = std::chrono::high_resolution_clock::now();
@@ -103,10 +102,7 @@ void timeSingleRun(std::vector<std::pair<int, double> > &timings_jacobi, std::ve
     std::chrono::duration<double> elapsed_gs = end_gs - start_gs;
     timings_gs.push_back(std::make_pair(N, elapsed_gs.count()));
     error_grid_gs.push_back(std::make_pair(N, error_gs->back()));
-    */
     
-    
-
     // Conjugate Gradient
     auto start_cg = std::chrono::high_resolution_clock::now();
     ConiugateGradientCall(x, f, res, p_d, Ap_d, residual_reached, number_iteration_performed, residuals_cg, error_cg, x_true);
@@ -150,7 +146,7 @@ void multipleRun()
 
     for (int i = 0; i < n.size(); i++)
     {
-        parameter_initialization(n[i], 1000000, 1e-8, 1.0, 1.0, 1.0);
+        parameter_initialization(n[i], 1000000, 1e-4, 1.0, 1.0, 1.0);
         cout << "\t\t\t\t\t\t\t\t\t   N: " << N << endl;
         timeSingleRun(timings_jacobi, timings_gs, timings_steepest, timings_cg, error_j, error_gs, error_steepest, error_cg);
     }
