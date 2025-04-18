@@ -146,7 +146,7 @@ void multipleRun()
 
     for (int i = 0; i < n.size(); i++)
     {
-        parameter_initialization(n[i], 1000000, 1e-4, 1.0, 1.0, 1.0);
+        parameter_initialization(n[i], 1000000, 1e-7, 1.0, 1.0, 1.0);
         cout << "\t\t\t\t\t\t\t\t\t   N: " << N << endl;
         timeSingleRun(timings_jacobi, timings_gs, timings_steepest, timings_cg, error_j, error_gs, error_steepest, error_cg);
     }
@@ -157,7 +157,7 @@ void multipleRun()
 
 int main()
 {
-    singleRun();
-    // multipleRun();
+    // singleRun();
+    multipleRun();
     return 0;
 }

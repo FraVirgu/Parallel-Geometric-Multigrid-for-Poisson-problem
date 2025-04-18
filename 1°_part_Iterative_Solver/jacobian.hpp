@@ -9,7 +9,6 @@ bool Jacobian(double *x, double *x_new, double *f, double *r, double *residual_r
 
     //  Compute initial residual
     compute_residual(r, x, f);
-    cout << "initial residual " << vector_norm(r) << endl;
     norm_residual = vector_norm(r); // divide by the norm of the right-hand side
     residuals->push_back(norm_residual);
 
@@ -49,15 +48,6 @@ bool Jacobian(double *x, double *x_new, double *f, double *r, double *residual_r
         if (norm_residual < EPSILON)
         {
             *number_iteration_performed = i;
-            errors->push_back(norm_error);
-            return true;
-        }
-
-        //  Convergence check (error)
-        if (norm_error < EPSILON)
-        {
-            *number_iteration_performed = i;
-            errors->push_back(norm_error);
             return true;
         }
 
@@ -67,6 +57,5 @@ bool Jacobian(double *x, double *x_new, double *f, double *r, double *residual_r
             x[j] = x_new[j];
         }
     }
-    errors->push_back(norm_error);
     return false;
 }

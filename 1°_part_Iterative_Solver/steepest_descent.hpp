@@ -63,24 +63,11 @@ bool Steepest_Descent(double *x, double *f, double *r, int *number_iteration_per
         compute_difference(err, x, x_true);
         norm_error = vector_norm(err) / vector_norm(x_true);
 
-        // Update residual reached
-        if (norm_residual <= res_tmp)
-        {
-            res_tmp = norm_residual;
-            residuals->push_back(norm_residual);
-            *residual_reached = norm_residual;
-        }
-        // update error reached
-        if (norm_error <= err_tmp)
-        {
-            err_tmp = norm_error;
-            errors->push_back(norm_error);
-        }
-
-        // Convergence check (residual)
+               // Convergence check (residual)
         if (norm_residual < EPSILON)
         {
             *number_iteration_performed = i;
+            errors->push_back(norm_error);
             return true;
         }
 
