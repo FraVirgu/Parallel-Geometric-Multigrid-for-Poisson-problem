@@ -147,11 +147,12 @@ vector<int> n_initialization()
 
 int main()
 {
-    // vector<int> n = n_initialization();
-
-    vector<int> n;
-    n.push_back(N);
-    save_solution_MG = false;
+    vector<int> n = n_initialization();
+    /*
+        vector<int> n;
+        n.push_back(N);
+        save_solution_MG = false;
+    */
 
     std::vector<std::pair<int, double>> timings_CG;
     std::vector<std::pair<int, double>> timings_MG;

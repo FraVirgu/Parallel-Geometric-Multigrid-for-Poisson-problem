@@ -135,14 +135,18 @@ cout << "smoother_residual_norm: " << dynamic_compute_vector_norm(smoother_resid
     }
 
     double *delta_h = new double[l];
-    dynamic_initialize_zeros_vector(delta_h, l);
-    prolungator(delta_H, delta_h, height_succ, weight_succ, height, weight);
+
+    /*
     cout << endl
          << "level : " << level << endl;
     cout << "delta_H_norm: " << dynamic_compute_vector_norm(delta_H, l_succ) << endl;
 
     cout << "smoother_output_norm: " << dynamic_compute_vector_norm(smoother_output, l) << endl;
     cout << "delta_h_norm: " << dynamic_compute_vector_norm(delta_h, l) << endl;
+
+    */
+    dynamic_initialize_zeros_vector(delta_h, l);
+    prolungator(delta_H, delta_h, height_succ, weight_succ, height, weight);
 
     for (int i = 0; i < l; i++)
     {
