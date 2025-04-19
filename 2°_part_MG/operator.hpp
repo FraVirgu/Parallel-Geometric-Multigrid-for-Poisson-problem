@@ -87,10 +87,7 @@ void MG(double *output, double *initial_solution, double *smoother_output, doubl
 
     // Pre-smoothing
     Jacobian(initial_solution, smoother_output, f, smoother_residual, v1, height, weight, h_actual, l);
-    double residual_norm = dynamic_compute_vector_norm(smoother_residual, l);
-    double f_residual_norm = dynamic_compute_vector_norm(f, l);
-    double first_norm_residual = residual_norm / f_residual_norm;
-    // cout << "level : " << level << "residual norm: " << norm_residual << endl;
+
     //  Restriction
     int n_succ,
         l_succ, weight_succ, height_succ;
@@ -103,10 +100,6 @@ void MG(double *output, double *initial_solution, double *smoother_output, doubl
     double *r_H = new double[l_succ];
     dynamic_initialize_zeros_vector(r_H, l_succ);
     restriction(smoother_residual, r_H, height, weight, height_succ, weight_succ);
-    /*
-cout << "smoother_residual_norm: " << dynamic_compute_vector_norm(smoother_residual, l) << endl;
-    cout << "r_H_norm: " << dynamic_compute_vector_norm(r_H, l_succ) << endl;
-    */
 
     // Initialize vectors for coarse grid
     double *initial_solution_H = new double[l_succ];
@@ -118,9 +111,9 @@ cout << "smoother_residual_norm: " << dynamic_compute_vector_norm(smoother_resid
     dynamic_initialize_zeros_vector(smoother_output_H, l_succ);
     dynamic_initialize_zeros_vector(smoother_residual_H, l_succ);
 
-    if (n <= 8)
+    if (n <= 4)
     {
-        Jacobian(initial_solution_H, delta_H, r_H, smoother_residual_H, 50, height_succ, weight_succ, h_succ, l_succ);
+        Jacobian(initial_solution_H, delta_H, r_H, smoother_residual_H, 3, height_succ, weight_succ, h_succ, l_succ);
     }
     else
     {
@@ -136,29 +129,20 @@ cout << "smoother_residual_norm: " << dynamic_compute_vector_norm(smoother_resid
 
     double *delta_h = new double[l];
 
-    /*
-    cout << endl
-         << "level : " << level << endl;
-    cout << "delta_H_norm: " << dynamic_compute_vector_norm(delta_H, l_succ) << endl;
-
-    cout << "smoother_output_norm: " << dynamic_compute_vector_norm(smoother_output, l) << endl;
-    cout << "delta_h_norm: " << dynamic_compute_vector_norm(delta_h, l) << endl;
-
-    */
     dynamic_initialize_zeros_vector(delta_h, l);
     prolungator(delta_H, delta_h, height_succ, weight_succ, height, weight);
-
+    dynamic_compute_residual(smoother_residual, smoother_output, f, weight, height, h_actual);
+    if (level == 0)
+        cout << "level : " << level << "\nsmoother residual norm : " << dynamic_compute_vector_norm(smoother_residual, l) << endl;
     for (int i = 0; i < l; i++)
     {
         smoother_output[i] += delta_h[i];
     }
-
+    dynamic_compute_residual(smoother_residual, smoother_output, f, weight, height, h_actual);
+    if (level == 0)
+        cout << "smoother residual norm after adding the delta_h : " << dynamic_compute_vector_norm(smoother_residual, l) << endl;
     // Post-smoothing
     Jacobian(smoother_output, output, f, smoother_residual, v2, height, weight, h_actual, l);
-    double second_norm_residual = dynamic_compute_vector_norm(smoother_residual, l);
-    double norm_residual_now = second_norm_residual / f_residual_norm;
-
-    //  cout << "level : " << level << "first norm residual: " << first_norm_residual << " second norm residual: " << norm_residual_now << endl;
 }
 
 void update_global_parameter(int n)
