@@ -21,22 +21,6 @@ double vector_norm(double *f)
     return sqrt(sum); // Square root of sum
 }
 
-// Compute residual norm
-double compute_residual_norm(double *x, double *f)
-{
-    double norm = 0.0;
-    norm = 0.0;
-    for (int y = 1; y < H - 1; y++)
-    {
-        for (int x_pos = 1; x_pos < W - 1; x_pos++)
-        {
-            int index = y * W + x_pos;
-            norm += pow((h * h) * f[index] - 4 * x[index] + x[index - 1] + x[index + 1] + x[index - W] + x[index + W], 2);
-        }
-    }
-    return sqrt(norm);
-}
-
 void compute_residual(double *r, double *x, double *f)
 {
     for (int y = 1; y < H - 1; y++)

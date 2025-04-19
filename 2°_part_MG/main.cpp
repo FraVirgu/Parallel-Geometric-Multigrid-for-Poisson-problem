@@ -25,15 +25,16 @@ void JacobiCall()
     double *smoother_output = new double[L];
     double *f = new double[L];
     double *res = new double[L];
-    initialize_zeros_vector(x);
-    compute_rhs(f);
+    dynamic_initialize_zeros_vector(x, L);
+    dynamic_compute_rhs(f, W, H, h);
 
     auto start = chrono::high_resolution_clock::now();
     Jacobi(x, output, f, 10000, H, W, h, L);
     auto end = chrono::high_resolution_clock::now();
-    compute_residual(res, output, f);
+    dynamic_compute_residual(res, output, f, W, H, h);
     cout << "Jacobi time: " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << "ms" << endl;
-    cout << "Residual norm: " << vector_norm(res) << endl;
+
+    cout << "Residual norm: " << dynamic_compute_vector_norm(res, L) << endl;
 }
 
 auto MGCall()
@@ -44,20 +45,20 @@ auto MGCall()
     double *smoother_output = new double[L];
     double *f = new double[L];
     double *res = new double[L];
-    initialize_zeros_vector(x);
-    initialize_zeros_vector(output);
-    initialize_zeros_vector(smoother_output);
-    initialize_zeros_vector(res);
-    compute_rhs(f);
+    dynamic_initialize_zeros_vector(x, L);
+    dynamic_initialize_zeros_vector(output, L);
+    dynamic_initialize_zeros_vector(smoother_output, L);
+    dynamic_initialize_zeros_vector(res, L);
+    dynamic_compute_rhs(f, W, H, h);
     int level = 0;
     auto start_MG = chrono::high_resolution_clock::now();
     MG(output, x, smoother_output, f, res, v1, v2, level, N, L, W, H, h);
     auto end_MG = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::milliseconds>(end_MG - start_MG).count();
     cout << "Multigrid time: " << chrono::duration_cast<chrono::milliseconds>(end_MG - start_MG).count() << "ms" << endl;
-    initialize_zeros_vector(res);
-    compute_residual(res, output, f);
-    cout << "Residual norm: " << vector_norm(res) << endl;
+    dynamic_initialize_zeros_vector(res, L);
+    dynamic_compute_residual(res, output, f, W, H, h);
+    cout << "Residual norm: " << dynamic_compute_vector_norm(res, L) << endl;
 
     return duration;
 }
@@ -87,8 +88,8 @@ auto FMgCall()
         save_solution_to_file(output[static_cast<int>(log2(N)) - 1], height[static_cast<int>(log2(N)) - 1], l[static_cast<int>(log2(N)) - 1]);
     cout
         << "FMG time: " << chrono::duration_cast<chrono::milliseconds>(end_FMG - start_FMG).count() << "ms" << endl;
-    compute_residual(res[static_cast<int>(log2(N)) - 1], output[static_cast<int>(log2(N)) - 1], f[static_cast<int>(log2(N)) - 1]);
-    cout << "Residual norm: " << vector_norm(res[static_cast<int>(log2(N)) - 1]) << endl;
+    dynamic_compute_residual(res[static_cast<int>(log2(N)) - 1], output[static_cast<int>(log2(N)) - 1], f[static_cast<int>(log2(N)) - 1], W, H, h);
+    cout << "Residual norm: " << dynamic_compute_vector_norm(res[static_cast<int>(log2(N)) - 1], l[static_cast<int>(log2(N)) - 1]) << endl;
     return duration;
 }
 
@@ -103,12 +104,12 @@ auto ConiugateGradientCall()
     double *Ap_d = new double[L];
     int *number_iteration_performed = new int;
     double *residual_reached = new double;
-    initialize_zeros_vector(x);
-    compute_rhs(f);
-    initialize_zeros_vector(x);
-    initialize_zeros_vector(res);
-    initialize_zeros_vector(p_d);
-    initialize_zeros_vector(Ap_d);
+    dynamic_initialize_zeros_vector(x, L);
+    dynamic_compute_rhs(f, W, H, h);
+    dynamic_initialize_zeros_vector(res, L);
+    dynamic_initialize_zeros_vector(p_d, L);
+    dynamic_initialize_zeros_vector(Ap_d, L);
+
     cout << "\nCG:" << endl;
     auto start_CG = chrono::high_resolution_clock::now();
     bool result = conjugate_gradient(x, f, res, p_d, Ap_d, number_iteration_performed, residual_reached);
@@ -135,7 +136,8 @@ int main()
 
     vector<int> n;
     n.push_back(N);
-    save_solution_MG = true;
+
+    save_solution_MG = false;
 
     std::vector<std::pair<int, double>> timings_CG;
     std::vector<std::pair<int, double>> timings_MG;

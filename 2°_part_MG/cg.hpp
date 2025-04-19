@@ -8,6 +8,20 @@ void compute_difference(double *error, double *x, double *x_true)
     }
 }
 
+void enforce_dirichlet_boundary(double *v)
+{
+    for (int y = 0; y < H; y++)
+    {
+        for (int x_pos = 0; x_pos < W; x_pos++)
+        {
+            if (y == 0 || y == H - 1 || x_pos == 0 || x_pos == W - 1)
+            {
+                v[y * W + x_pos] = 0.0;
+            }
+        }
+    }
+}
+
 // Function to compute the standard inner product
 double compute_inner_product(const double *v1, const double *v2)
 {
@@ -29,15 +43,22 @@ void compute_inner_product_with_A(double *r, double *result)
             int index = y * W + x_pos;
 
             // Apply Laplacian operator (A * r) using the same stencil
-            result[index] = -4 * r[index] + r[index - 1] + r[index + 1] + r[index - W] + r[index + W];
+            result[index] = (4 * r[index] - r[index - 1] - r[index + 1] - r[index - W] - r[index + W]) / (h * h);
         }
     }
 }
 
 bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap_d, int *number_iteration_performed, double *residual_reached)
 {
-    double alpha, beta, norm_residual, res_tmp, err_tmp, norm_error;
-    compute_residual(r, x, f);
+    double alpha, beta, res_tmp, norm_residual, err_tmp, norm_error;
+    double *err = new double[L];
+
+    dynamic_initialize_zeros_vector(x, L);
+    // Compute initial residual: r = f - A * x
+    dynamic_compute_residual(r, x, f, W, H, h);
+    norm_residual = dynamic_compute_vector_norm(r, L); // divide by the norm of the right-hand side
+    res_tmp = norm_residual;
+
     // Initialize search direction: p = r
     for (int j = 0; j < L; j++)
     {
@@ -48,9 +69,9 @@ bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap
     {
 
         // Compute p_d^(k)^Tr^(k)
-        double rTr = compute_inner_product(p_d, r); // Store r^T * r
+        double rTr = compute_inner_product(r, r); // Store r^T * r
         // Compute A * p
-        compute_inner_product_with_A(r, Ap_d);
+        compute_inner_product_with_A(p_d, Ap_d);
 
         // Compute step size: alpha = (r^T * r) / (p^T * A * p)
         double pAp = compute_inner_product(p_d, Ap_d);
@@ -69,7 +90,9 @@ bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap
         }
 
         // Compute new residual
-        norm_residual = vector_norm(r);
+        norm_residual = dynamic_compute_vector_norm(r, L); // divide by the norm of the right-hand side
+        cout << "Iteration " << i << ": Residual norm = " << norm_residual << endl;
+        enforce_dirichlet_boundary(x);
 
         // Convergence check
         if (norm_residual < EPSILON)
@@ -81,8 +104,8 @@ bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap
         }
 
         // Compute new beta: beta = (r[k+1]^T * r[k+1]) / (r[k]^T * r[k])
-        double rTr_new = compute_inner_product(Ap_d, r);
-        beta = rTr_new / pAp;
+        double rTr_new = compute_inner_product(r, r);
+        beta = rTr_new / rTr;
 
         // Update search direction: p[k+1] = r[k+1] + beta * p[k]
         for (int j = 0; j < L; j++)

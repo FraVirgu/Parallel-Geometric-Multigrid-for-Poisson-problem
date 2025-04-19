@@ -45,7 +45,7 @@ bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap
     double alpha, beta, res_tmp, norm_residual, err_tmp, norm_error;
     double *err = new double[L];
 
-    initialize_zeros_vector(x); 
+    initialize_zeros_vector(x);
     // Compute initial residual: r = f - A * x
     compute_residual(r, x, f);
     norm_residual = vector_norm(r);
@@ -97,23 +97,6 @@ bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap
         // Compute the error
         compute_difference(err, x, x_true);
         norm_error = vector_norm(err) / vector_norm(x_true);
-
-        // Debugging output
-
-        /*
-         double xtxt = compute_inner_product(x, x_true);
-          if (i % 10 == 0 || i == MAX_ITERATION - 1)
-                {
-                    std::cout << "[CG] Iteration " << i
-                              << " | Residual Norm: " << norm_residual
-                              << " | Norm of x_true: " << vector_norm(x_true)
-                              << " | Norm of x: " << vector_norm(x)
-                              << "[DEBUG] x^T x_true = " << xtxt
-                              << " | Error Norm: " << vector_norm(err)
-                              << " | Relative Error: " << norm_error << std::endl;
-                }
-
-        */
 
         // Update residual reached
         if (norm_residual <= res_tmp)

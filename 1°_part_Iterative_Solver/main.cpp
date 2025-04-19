@@ -32,9 +32,9 @@ void singleRun()
     compute_rhs(f);
     compute_exact_solution(x_true, compute_function);
 
-    JacobiCall(x, x_tmp, res, f, residual_reached, number_iteration_performed, residuals_jacobian, error_jacobian, x_true);
-    SteepestDescentCall(x, f, res, number_iteration_performed, residual_reached, residuals_steepest, error_steepest, x_true);
-    GaussSeidelCall(x, f, res, residual_reached, number_iteration_performed, residuals_gs, error_gs, x_true);
+    //  JacobiCall(x, x_tmp, res, f, residual_reached, number_iteration_performed, residuals_jacobian, error_jacobian, x_true);
+    // SteepestDescentCall(x, f, res, number_iteration_performed, residual_reached, residuals_steepest, error_steepest, x_true);
+    // GaussSeidelCall(x, f, res, residual_reached, number_iteration_performed, residuals_gs, error_gs, x_true);
     ConiugateGradientCall(x, f, res, p_d, Ap_d, residual_reached, number_iteration_performed, residuals_cg, error_cg, x_true);
 
     free(x);
@@ -53,7 +53,7 @@ void singleRun()
 /**
  * @brief Same as singleRun : runs iterative solvers and records their residuals and errors.
  */
-void timeSingleRun(std::vector<std::pair<int, double> > &timings_jacobi, std::vector<std::pair<int, double> > &timings_gs, std::vector<std::pair<int, double> > &timings_steepest, std::vector<std::pair<int, double> > &timings_cg, std::vector<std::pair<int, double> > &error_grid_jacobian, std::vector<std::pair<int, double> > &error_grid_steepest, std::vector<std::pair<int, double> > &error_grid_gs, std::vector<std::pair<int, double> > &error_grid_cg)
+void timeSingleRun(std::vector<std::pair<int, double>> &timings_jacobi, std::vector<std::pair<int, double>> &timings_gs, std::vector<std::pair<int, double>> &timings_steepest, std::vector<std::pair<int, double>> &timings_cg, std::vector<std::pair<int, double>> &error_grid_jacobian, std::vector<std::pair<int, double>> &error_grid_steepest, std::vector<std::pair<int, double>> &error_grid_gs, std::vector<std::pair<int, double>> &error_grid_cg)
 {
     std::vector<double> *residuals_jacobian = new std::vector<double>();
     std::vector<double> *residuals_steepest = new std::vector<double>();
@@ -134,15 +134,15 @@ void timeSingleRun(std::vector<std::pair<int, double> > &timings_jacobi, std::ve
 void multipleRun()
 {
     vector<int> n = n_initialization();
-    std::vector<std::pair<int, double> > timings_jacobi;
-    std::vector<std::pair<int, double> > timings_gs;
-    std::vector<std::pair<int, double> > timings_steepest;
-    std::vector<std::pair<int, double> > timings_cg;
+    std::vector<std::pair<int, double>> timings_jacobi;
+    std::vector<std::pair<int, double>> timings_gs;
+    std::vector<std::pair<int, double>> timings_steepest;
+    std::vector<std::pair<int, double>> timings_cg;
 
-    std::vector<std::pair<int, double> > error_j;
-    std::vector<std::pair<int, double> > error_gs;
-    std::vector<std::pair<int, double> > error_steepest;
-    std::vector<std::pair<int, double> > error_cg;
+    std::vector<std::pair<int, double>> error_j;
+    std::vector<std::pair<int, double>> error_gs;
+    std::vector<std::pair<int, double>> error_steepest;
+    std::vector<std::pair<int, double>> error_cg;
 
     for (int i = 0; i < n.size(); i++)
     {
@@ -157,7 +157,7 @@ void multipleRun()
 
 int main()
 {
-    // singleRun();
-    multipleRun();
+    singleRun();
+    // multipleRun();
     return 0;
 }

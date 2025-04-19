@@ -87,7 +87,7 @@ void MG(double *output, double *initial_solution, double *smoother_output, doubl
     // Pre-smoothing
     Jacobi(initial_solution, smoother_output, f, v1, height, weight, h_actual, l);
     dynamic_compute_residual(smoother_residual, smoother_output, f, weight, height, h_actual);
-
+    cout << "level : " << level << " n : " << n << " l  : " << l << h_actual << " residual norm : " << dynamic_compute_vector_norm(smoother_residual, l) << endl;
     // Restriction
     int n_succ, l_succ, weight_succ, height_succ;
     double h_succ;
@@ -164,11 +164,12 @@ void initialize_FG(int initial_N, double **x, double **output, double **smoother
         smoother_output[i] = new double[L];
         f[i] = new double[L];
         res[i] = new double[L];
-        initialize_zeros_vector(x[i]);
-        initialize_zeros_vector(output[i]);
-        initialize_zeros_vector(smoother_output[i]);
-        initialize_zeros_vector(res[i]);
-        compute_rhs(f[i]);
+        dynamic_initialize_zeros_vector(x[i], L);
+        dynamic_initialize_zeros_vector(output[i], L);
+        dynamic_initialize_zeros_vector(smoother_output[i], L);
+        dynamic_initialize_zeros_vector(res[i], L);
+        dynamic_compute_rhs(f[i], weight[i], height[i], h_act[i]);
+
         count = count * 2;
     }
 }
