@@ -1,13 +1,5 @@
 #include "main.hpp"
 
-void compute_difference(double *error, double *x, double *x_true)
-{
-    for (int i = 0; i < L; i++)
-    {
-        error[i] = x[i] - x_true[i];
-    }
-}
-
 void enforce_dirichlet_boundary(double *v)
 {
     for (int y = 0; y < H; y++)
@@ -91,7 +83,6 @@ bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap
 
         // Compute new residual
         norm_residual = dynamic_compute_vector_norm(r, L); // divide by the norm of the right-hand side
-        cout << "Iteration " << i << ": Residual norm = " << norm_residual << endl;
         enforce_dirichlet_boundary(x);
 
         // Convergence check

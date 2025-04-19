@@ -1,5 +1,6 @@
 #include "main.hpp"
 #include "cg.hpp"
+#include "jacobian.hpp"
 
 void prolungator(double *input, double *output, int input_H, int input_W, int output_H, int output_W)
 {
@@ -85,11 +86,14 @@ void MG(double *output, double *initial_solution, double *smoother_output, doubl
     // In MG the output is the first parameter, in Jacibi2 the output is the second parameter ( not well written )
 
     // Pre-smoothing
-    Jacobi(initial_solution, smoother_output, f, v1, height, weight, h_actual, l);
-    dynamic_compute_residual(smoother_residual, smoother_output, f, weight, height, h_actual);
-    cout << "level : " << level << " n : " << n << " l  : " << l << h_actual << " residual norm : " << dynamic_compute_vector_norm(smoother_residual, l) << endl;
-    // Restriction
-    int n_succ, l_succ, weight_succ, height_succ;
+    Jacobian(initial_solution, smoother_output, f, smoother_residual, v1, height, weight, h_actual, l);
+    double residual_norm = dynamic_compute_vector_norm(smoother_residual, l);
+    double f_residual_norm = dynamic_compute_vector_norm(f, l);
+    double first_norm_residual = residual_norm / f_residual_norm;
+    // cout << "level : " << level << "residual norm: " << norm_residual << endl;
+    //  Restriction
+    int n_succ,
+        l_succ, weight_succ, height_succ;
     double h_succ;
     n_succ = n / 2;
     l_succ = n_succ * n_succ;
@@ -99,6 +103,10 @@ void MG(double *output, double *initial_solution, double *smoother_output, doubl
     double *r_H = new double[l_succ];
     dynamic_initialize_zeros_vector(r_H, l_succ);
     restriction(smoother_residual, r_H, height, weight, height_succ, weight_succ);
+    /*
+cout << "smoother_residual_norm: " << dynamic_compute_vector_norm(smoother_residual, l) << endl;
+    cout << "r_H_norm: " << dynamic_compute_vector_norm(r_H, l_succ) << endl;
+    */
 
     // Initialize vectors for coarse grid
     double *initial_solution_H = new double[l_succ];
@@ -110,9 +118,9 @@ void MG(double *output, double *initial_solution, double *smoother_output, doubl
     dynamic_initialize_zeros_vector(smoother_output_H, l_succ);
     dynamic_initialize_zeros_vector(smoother_residual_H, l_succ);
 
-    if (n <= 2)
+    if (n <= 8)
     {
-        Jacobi(initial_solution_H, delta_H, r_H, 1, height_succ, weight_succ, h_succ, l_succ);
+        Jacobian(initial_solution_H, delta_H, r_H, smoother_residual_H, 50, height_succ, weight_succ, h_succ, l_succ);
     }
     else
     {
@@ -127,7 +135,14 @@ void MG(double *output, double *initial_solution, double *smoother_output, doubl
     }
 
     double *delta_h = new double[l];
+    dynamic_initialize_zeros_vector(delta_h, l);
     prolungator(delta_H, delta_h, height_succ, weight_succ, height, weight);
+    cout << endl
+         << "level : " << level << endl;
+    cout << "delta_H_norm: " << dynamic_compute_vector_norm(delta_H, l_succ) << endl;
+
+    cout << "smoother_output_norm: " << dynamic_compute_vector_norm(smoother_output, l) << endl;
+    cout << "delta_h_norm: " << dynamic_compute_vector_norm(delta_h, l) << endl;
 
     for (int i = 0; i < l; i++)
     {
@@ -135,7 +150,11 @@ void MG(double *output, double *initial_solution, double *smoother_output, doubl
     }
 
     // Post-smoothing
-    Jacobi(smoother_output, output, f, v2, height, weight, h_actual, l);
+    Jacobian(smoother_output, output, f, smoother_residual, v2, height, weight, h_actual, l);
+    double second_norm_residual = dynamic_compute_vector_norm(smoother_residual, l);
+    double norm_residual_now = second_norm_residual / f_residual_norm;
+
+    //  cout << "level : " << level << "first norm residual: " << first_norm_residual << " second norm residual: " << norm_residual_now << endl;
 }
 
 void update_global_parameter(int n)
@@ -169,17 +188,16 @@ void initialize_FG(int initial_N, double **x, double **output, double **smoother
         dynamic_initialize_zeros_vector(smoother_output[i], L);
         dynamic_initialize_zeros_vector(res[i], L);
         dynamic_compute_rhs(f[i], weight[i], height[i], h_act[i]);
-
         count = count * 2;
     }
 }
 
 void FMG(int initial_N, double **output, double **x, double **smoother_output, double **f, double **res, int *n, int *l, int *weight, int *height, double *h_act, int v1, int v2)
 {
-    Jacobi(x[0], output[0], f[0], 2, height[0], weight[0], h_act[0], l[0]);
+    Jacobian(x[0], output[0], f[0], res[0], 5, height[0], weight[0], h_act[0], l[0]);
     for (int i = 0; i < log2(initial_N) - 1; i++)
     {
         prolungator(output[i], x[i + 1], height[i], weight[i], height[i + 1], weight[i + 1]);
-        MG(output[i + 1], x[i + 1], smoother_output[i + 1], f[i + 1], res[i + 1], v1, v2, 0, n[i + 1], l[i + 1], weight[i + 1], height[i + 1], h_act[i + 1]);
+        MG(output[i + 1], x[i + 1], smoother_output[i + 1], f[i + 1], res[i + 1], v1, v2, 0, n[i + 1], l[i + 1], weight[i + 1], height[i + 1], h_act[i + 1], 1);
     }
 }

@@ -1,4 +1,5 @@
 #include "operator.hpp"
+#include "jacobian.hpp"
 bool save_solution_MG = false;
 void save_solution_to_file(double *x, int height, int length)
 {
@@ -19,22 +20,30 @@ void save_solution_to_file(double *x, int height, int length)
 
 void JacobiCall()
 {
-    cout << "JACOBI METHOD" << endl;
+    std::vector<double> *residuals_jacobian = new std::vector<double>();
+
+    std::vector<double> *error_jacobian = new std::vector<double>();
+
     double *x = new double[L];
-    double *output = new double[L];
-    double *smoother_output = new double[L];
+    double *x_new = new double[L];
+    double *x_true = new double[L];
     double *f = new double[L];
-    double *res = new double[L];
-    dynamic_initialize_zeros_vector(x, L);
+    double *r = new double[L];
+
+    int *number_iteration_performed = new int;
+    double *residual_reached = new double;
     dynamic_compute_rhs(f, W, H, h);
+    dynamic_initialize_zeros_vector(x, L);
+    dynamic_initialize_zeros_vector(x_new, L);
+    dynamic_initialize_zeros_vector(r, L);
 
-    auto start = chrono::high_resolution_clock::now();
-    Jacobi(x, output, f, 10000, H, W, h, L);
-    auto end = chrono::high_resolution_clock::now();
-    dynamic_compute_residual(res, output, f, W, H, h);
-    cout << "Jacobi time: " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << "ms" << endl;
-
-    cout << "Residual norm: " << dynamic_compute_vector_norm(res, L) << endl;
+    cout << "_____  Jacobian:" << endl;
+    int v = 3581;
+    Jacobian(x, x_new, f, r, v, H, W, h, L);
+    double res_norm = dynamic_compute_vector_norm(r, L);
+    double f_norm = dynamic_compute_vector_norm(f, L);
+    double norm_residual = res_norm / f_norm;
+    cout << "residual norm: " << norm_residual << endl;
 }
 
 auto MGCall()
@@ -58,7 +67,10 @@ auto MGCall()
     cout << "Multigrid time: " << chrono::duration_cast<chrono::milliseconds>(end_MG - start_MG).count() << "ms" << endl;
     dynamic_initialize_zeros_vector(res, L);
     dynamic_compute_residual(res, output, f, W, H, h);
-    cout << "Residual norm: " << dynamic_compute_vector_norm(res, L) << endl;
+    double res_norm = dynamic_compute_vector_norm(res, L);
+    double f_norm = dynamic_compute_vector_norm(f, L);
+    double norm_residual = res_norm / f_norm;
+    cout << "Residual norm: " << norm_residual << endl;
 
     return duration;
 }
@@ -88,8 +100,11 @@ auto FMgCall()
         save_solution_to_file(output[static_cast<int>(log2(N)) - 1], height[static_cast<int>(log2(N)) - 1], l[static_cast<int>(log2(N)) - 1]);
     cout
         << "FMG time: " << chrono::duration_cast<chrono::milliseconds>(end_FMG - start_FMG).count() << "ms" << endl;
-    dynamic_compute_residual(res[static_cast<int>(log2(N)) - 1], output[static_cast<int>(log2(N)) - 1], f[static_cast<int>(log2(N)) - 1], W, H, h);
-    cout << "Residual norm: " << dynamic_compute_vector_norm(res[static_cast<int>(log2(N)) - 1], l[static_cast<int>(log2(N)) - 1]) << endl;
+    dynamic_compute_residual(res[static_cast<int>(log2(N)) - 1], output[static_cast<int>(log2(N)) - 1], f[static_cast<int>(log2(N)) - 1], weight[static_cast<int>(log2(N)) - 1], height[static_cast<int>(log2(N)) - 1], h_act[static_cast<int>(log2(N)) - 1]);
+    double res_norm = dynamic_compute_vector_norm(res[static_cast<int>(log2(N)) - 1], l[static_cast<int>(log2(N)) - 1]);
+    double f_norm = dynamic_compute_vector_norm(f[static_cast<int>(log2(N)) - 1], l[static_cast<int>(log2(N)) - 1]);
+    double norm_residual = res_norm / f_norm;
+    cout << "Residual norm: " << norm_residual << endl;
     return duration;
 }
 
@@ -123,7 +138,7 @@ auto ConiugateGradientCall()
 vector<int> n_initialization()
 {
     vector<int> n;
-    for (int i = 4; i <= N; i = i * 2)
+    for (int i = 32; i <= N; i = i * 2)
     {
         n.push_back(i);
     }
@@ -136,7 +151,6 @@ int main()
 
     vector<int> n;
     n.push_back(N);
-
     save_solution_MG = false;
 
     std::vector<std::pair<int, double>> timings_CG;
@@ -147,16 +161,20 @@ int main()
     {
         update_global_parameter(n[i]);
         cout << "\n----------------\tN: " << N << endl;
-        auto duration_CG = ConiugateGradientCall();
-        auto duration_MG = MGCall();
-        auto duration_FMG = FMgCall();
+        /*
 
-        timings_CG.push_back(std::make_pair(N, duration_CG));
+
+             timings_CG.push_back(std::make_pair(N, duration_CG));
         timings_MG.push_back(std::make_pair(N, duration_MG));
         timings_FMG.push_back(std::make_pair(N, duration_FMG));
+        */
+        // auto duration_FMG = FMgCall();
+        auto duration_MG = MGCall();
+        // auto duration_CG = ConiugateGradientCall();
+        // JacobiCall();
     }
 
-    save_timings_to_file(timings_CG, timings_MG, timings_FMG);
+    // save_timings_to_file(timings_CG, timings_MG, timings_FMG);
 
     return 0;
 }
