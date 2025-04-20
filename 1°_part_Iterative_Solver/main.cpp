@@ -5,6 +5,7 @@
  * Initializes data, computes RHS and exact solution, runs solvers (Jacobi, Steepest Descent,
  * Gauss-Seidel, Conjugate Gradient), and saves residuals/errors to files.
  */
+// ciao
 void singleRun()
 {
     std::vector<double> *residuals_jacobian = new std::vector<double>();
