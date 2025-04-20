@@ -37,7 +37,7 @@ void JacobiCall()
     cout << "Residual norm: " << dynamic_compute_vector_norm(res, L) << endl;
 }
 
-auto MGCall()
+long long MGCall()
 {
     cout << "\nMULTIGRID METHOD" << endl;
     double *x = new double[L];
@@ -63,7 +63,7 @@ auto MGCall()
     return duration;
 }
 
-auto FMgCall()
+long long FMgCall()
 {
     cout << "\nFULL MULTIGRID METHOD" << endl;
 
@@ -93,7 +93,7 @@ auto FMgCall()
     return duration;
 }
 
-auto ConiugateGradientCall()
+long long ConiugateGradientCall()
 {
     double *x = new double[L];
     double *x_tmp = new double[L];
@@ -139,17 +139,17 @@ int main()
 
     save_solution_MG = false;
 
-    std::vector<std::pair<int, double>> timings_CG;
-    std::vector<std::pair<int, double>> timings_MG;
-    std::vector<std::pair<int, double>> timings_FMG;
+    std::vector<std::pair<int, double> > timings_CG;
+    std::vector<std::pair<int, double> > timings_MG;
+    std::vector<std::pair<int, double> > timings_FMG;
 
     for (int i = 0; i < n.size(); i++)
     {
         update_global_parameter(n[i]);
         cout << "\n----------------\tN: " << N << endl;
-        auto duration_CG = ConiugateGradientCall();
-        auto duration_MG = MGCall();
-        auto duration_FMG = FMgCall();
+        long long duration_CG = ConiugateGradientCall();
+        long long duration_MG = MGCall();
+        long long duration_FMG = FMgCall();
 
         timings_CG.push_back(std::make_pair(N, duration_CG));
         timings_MG.push_back(std::make_pair(N, duration_MG));

@@ -86,7 +86,7 @@ void create_directory_if_not_exists(const std::string &path)
         mkdir(path.c_str(), 0777);
     }
 }
-void save_timings_to_file(std::vector<std::pair<int, double>> &timings_cg, std::vector<std::pair<int, double>> &timings_MG, std::vector<std::pair<int, double>> &timings_FMG)
+void save_timings_to_file(std::vector<std::pair<int, double> > &timings_cg, std::vector<std::pair<int, double> > &timings_MG, std::vector<std::pair<int, double> > &timings_FMG)
 {
     create_directory_if_not_exists("OUTPUT_RESULT");
 
