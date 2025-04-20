@@ -118,12 +118,6 @@ bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap
             *residual_reached = norm_residual;
             *number_iteration_performed = i;
 
-            // compute initial error
-            compute_difference(err, x, x_true);
-            norm_error = vector_norm(err) / vector_norm(x_true);
-            err_tmp = norm_error;
-            error_cg->push_back(norm_error);
-
             return true;
         }
 
@@ -137,12 +131,6 @@ bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap
             p_d[j] = r[j] + beta * p_d[j];
         }
     }
-
-    // compute initial error
-    compute_difference(err, x, x_true);
-    norm_error = vector_norm(err) / vector_norm(x_true);
-    err_tmp = norm_error;
-    error_cg->push_back(norm_error);
 
     return false;
 }
