@@ -5,9 +5,9 @@
  * Initializes data, computes RHS and exact solution, runs solvers (Jacobi, Steepest Descent,
  * Gauss-Seidel, Conjugate Gradient), and saves residuals/errors to files.
  */
-// ciao
-void singleRun()
+void singleRun(int n)
 {
+    cout << "------------\tN : " << n << endl;
     std::vector<double> *residuals_jacobian = new std::vector<double>();
     std::vector<double> *residuals_steepest = new std::vector<double>();
     std::vector<double> *residuals_gs = new std::vector<double>();
@@ -19,6 +19,46 @@ void singleRun()
     std::vector<double> *error_cg = new std::vector<double>();
 
     std::vector<double> *final_error_norm = new std::vector<double>();
+
+    parameter_initialization(n, MAX_ITERATION, EPSILON, a, p, q);
+    double *x = new double[L];
+    double *x_tmp = new double[L];
+    double *x_true = new double[L];
+    double *f = new double[L];
+    double *res = new double[L];
+    double *p_d = new double[L];
+    double *Ap_d = new double[L];
+    int *number_iteration_performed = new int;
+    double *residual_reached = new double;
+
+    compute_rhs(f);
+    compute_exact_solution(x_true, compute_function);
+
+    JacobiCall(x, x_tmp, res, f, residual_reached, number_iteration_performed, residuals_jacobian, error_jacobian, x_true);
+    SteepestDescentCall(x, f, res, number_iteration_performed, residual_reached, residuals_steepest, error_steepest, x_true);
+    GaussSeidelCall(x, f, res, residual_reached, number_iteration_performed, residuals_gs, error_gs, x_true);
+    ConiugateGradientCall(x, f, res, p_d, Ap_d, residual_reached, number_iteration_performed, residuals_cg, error_cg, x_true);
+
+    free(x);
+    free(x_tmp);
+    free(f);
+    free(number_iteration_performed);
+    free(residual_reached);
+    save_residuals_to_file(residuals_jacobian, residuals_steepest, residuals_gs, residuals_cg);
+    save_error_to_file(error_jacobian, error_steepest, error_gs, error_cg);
+
+    delete residuals_jacobian;
+    delete residuals_steepest;
+    delete residuals_gs;
+}
+
+void singleRunSaveErrorVectorJacobi()
+{
+    SAVE_ERROR_VERCTOR = true;
+
+    std::vector<double> *residuals_jacobian = new std::vector<double>();
+
+    std::vector<double> *error_jacobian = new std::vector<double>();
 
     double *x = new double[L];
     double *x_tmp = new double[L];
@@ -33,22 +73,15 @@ void singleRun()
     compute_rhs(f);
     compute_exact_solution(x_true, compute_function);
 
-    //  JacobiCall(x, x_tmp, res, f, residual_reached, number_iteration_performed, residuals_jacobian, error_jacobian, x_true);
-    // SteepestDescentCall(x, f, res, number_iteration_performed, residual_reached, residuals_steepest, error_steepest, x_true);
-    // GaussSeidelCall(x, f, res, residual_reached, number_iteration_performed, residuals_gs, error_gs, x_true);
-    ConiugateGradientCall(x, f, res, p_d, Ap_d, residual_reached, number_iteration_performed, residuals_cg, error_cg, x_true);
+    JacobiCall(x, x_tmp, res, f, residual_reached, number_iteration_performed, residuals_jacobian, error_jacobian, x_true);
 
     free(x);
     free(x_tmp);
     free(f);
     free(number_iteration_performed);
     free(residual_reached);
-    save_residuals_to_file(residuals_jacobian, residuals_steepest, residuals_gs, residuals_cg);
-    save_error_to_file(error_jacobian, error_steepest, error_gs, error_cg);
 
     delete residuals_jacobian;
-    delete residuals_steepest;
-    delete residuals_gs;
 }
 
 /**
@@ -158,7 +191,20 @@ void multipleRun()
 
 int main()
 {
-    singleRun();
+    SAVE_ERROR_VERCTOR = true;
+
+    /*
+    // Used this structure to plot => residuals vs iterations
+    // Used this structure to plot => residuals vs iterations in two different N values
+    int n_1 = N, n_2 = N * 2;
+    singleRun(n_1);
+    singleRun(n_2);
+
+    */
+
     // multipleRun();
+
+    singleRunSaveErrorVectorJacobi();
+
     return 0;
 }

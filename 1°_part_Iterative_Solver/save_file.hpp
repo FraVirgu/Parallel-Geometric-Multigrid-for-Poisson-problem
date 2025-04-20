@@ -1,3 +1,5 @@
+#ifndef SAVE_FILE_HPP
+#define SAVE_FILE_HPP
 #include "head.hpp"
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -15,7 +17,7 @@ void save_residuals_to_file(std::vector<double> *residuals_jacobian, std::vector
 {
     create_directory_if_not_exists("OUTPUT_RESULT");
 
-    std::ofstream file_jacobian("OUTPUT_RESULT/residuals_jacobian.txt");
+    std::ofstream file_jacobian("OUTPUT_RESULT/residuals_jacobian_" + std::to_string(N) + ".txt");
     if (file_jacobian.is_open())
     {
         for (const auto &residual : *residuals_jacobian)
@@ -29,7 +31,8 @@ void save_residuals_to_file(std::vector<double> *residuals_jacobian, std::vector
         std::cerr << "Unable to open file for writing Jacobian residuals.\n";
     }
 
-    std::ofstream file_steepest("OUTPUT_RESULT/residuals_steepest_descent.txt");
+    std::string filename_steepest = "OUTPUT_RESULT/residuals_steepest_descent_" + std::to_string(N) + ".txt";
+    std::ofstream file_steepest(filename_steepest);
     if (file_steepest.is_open())
     {
         for (const auto &residual : *residuals_steepest)
@@ -43,7 +46,7 @@ void save_residuals_to_file(std::vector<double> *residuals_jacobian, std::vector
         std::cerr << "Unable to open file for writing Steepest Descent residuals.\n";
     }
 
-    std::ofstream file_gs("OUTPUT_RESULT/residuals_gs.txt");
+    std::ofstream file_gs("OUTPUT_RESULT/residuals_gs_" + std::to_string(N) + ".txt");
     if (file_gs.is_open())
     {
         for (const auto &residual : *residuals_gs)
@@ -57,7 +60,7 @@ void save_residuals_to_file(std::vector<double> *residuals_jacobian, std::vector
         std::cerr << "Unable to open file for writing Gauss-Seidel residuals.\n";
     }
 
-    std::ofstream file_cg("OUTPUT_RESULT/residuals_cg.txt");
+    std::ofstream file_cg("OUTPUT_RESULT/residuals_cg_" + std::to_string(N) + ".txt");
     if (file_cg.is_open())
     {
         for (const auto &residual : *residuals_cg)
@@ -133,7 +136,7 @@ void save_error_to_file(std::vector<double> *error_jacobian, std::vector<double>
     }
 }
 
-void save_timings_to_file(std::vector<std::pair<int, double> > &timings_jacobi, std::vector<std::pair<int, double> > &timings_gs, std::vector<std::pair<int, double> > &timings_steepest, std::vector<std::pair<int, double> > &timings_cg)
+void save_timings_to_file(std::vector<std::pair<int, double>> &timings_jacobi, std::vector<std::pair<int, double>> &timings_gs, std::vector<std::pair<int, double>> &timings_steepest, std::vector<std::pair<int, double>> &timings_cg)
 {
     create_directory_if_not_exists("OUTPUT_RESULT");
 
@@ -194,7 +197,7 @@ void save_timings_to_file(std::vector<std::pair<int, double> > &timings_jacobi, 
     }
 }
 
-void save_error_h_to_file(std::vector<std::pair<int, double> > &error_j, std::vector<std::pair<int, double> > &error_gs, std::vector<std::pair<int, double> > &error_steepest, std::vector<std::pair<int, double> > &error_cg)
+void save_error_h_to_file(std::vector<std::pair<int, double>> &error_j, std::vector<std::pair<int, double>> &error_gs, std::vector<std::pair<int, double>> &error_steepest, std::vector<std::pair<int, double>> &error_cg)
 {
     create_directory_if_not_exists("OUTPUT_RESULT");
 
@@ -254,3 +257,26 @@ void save_error_h_to_file(std::vector<std::pair<int, double> > &error_j, std::ve
         std::cerr << "Unable to open file for writing Conjugate Gradient errors.\n";
     }
 }
+
+void save_error_vector(int iteration, double *x, int height, int length)
+{
+
+    create_directory_if_not_exists("OUTPUT_RESULT");
+    create_directory_if_not_exists("OUTPUT_RESULT/ERROR_VECTOR");
+
+    std::ofstream file_jacobian("OUTPUT_RESULT/ERROR_VECTOR/h_errors_jacobi_" + std::to_string(iteration) + ".txt");
+    if (!file_jacobian.is_open())
+    {
+        std::cerr << "Error: Could not open file_jacobian solution.txt for writing." << std::endl;
+        return;
+    }
+    file_jacobian << height << std::endl;
+    for (int i = 0; i < length; ++i)
+    {
+        file_jacobian << x[i] << std::endl;
+    }
+    file_jacobian.close();
+    std::cout << "Solution saved to solution.txt" << std::endl;
+}
+
+#endif // SAVE_FILE_HPP

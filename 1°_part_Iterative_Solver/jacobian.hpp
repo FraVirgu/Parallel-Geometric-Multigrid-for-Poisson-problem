@@ -1,5 +1,5 @@
 #include "head.hpp"
-
+#include "save_file.hpp"
 // Perform Jacobi iterations
 bool Jacobian(double *x, double *x_new, double *f, double *r, double *residual_reached, int *number_iteration_performed, vector<double> *residuals, vector<double> *errors, double *x_true)
 {
@@ -41,7 +41,7 @@ bool Jacobian(double *x, double *x_new, double *f, double *r, double *residual_r
         norm_residual = vector_norm(r) / vector_norm(f);
         residuals->push_back(norm_residual);
         *residual_reached = norm_residual;
-        
+
         //  Compute the error
         compute_difference(err, x_new, x_true);
         norm_error = vector_norm(err) / vector_norm(x_true);
@@ -58,6 +58,12 @@ bool Jacobian(double *x, double *x_new, double *f, double *r, double *residual_r
         {
             x[j] = x_new[j];
         }
+
+        if (SAVE_ERROR_VERCTOR && i % 10 == 0 && i <= 50)
+        {
+            save_error_vector(i, err, H, L);
+        }
     }
+
     return false;
 }
