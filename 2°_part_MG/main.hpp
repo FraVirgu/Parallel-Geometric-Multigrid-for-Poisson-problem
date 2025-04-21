@@ -17,6 +17,14 @@ void compute_difference(double *error, double *x, double *x_true)
     }
 }
 
+void dynamic_compute_difference(double *error, double *x, double *x_true, int l)
+{
+    for (int i = 0; i < l; i++)
+    {
+        error[i] = x[i] - x_true[i];
+    }
+}
+
 // Multigrid solver helper functions
 double dynamic_compute_vector_norm(double *r, int l)
 {

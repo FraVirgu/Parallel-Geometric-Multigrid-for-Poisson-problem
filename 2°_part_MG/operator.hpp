@@ -87,6 +87,7 @@ void MG(double *output, double *initial_solution, double *smoother_output, doubl
 
     // Pre-smoothing
     Jacobian(initial_solution, smoother_output, f, smoother_residual, v1, height, weight, h_actual, l);
+    // cout << "level : " << level << "\nsmoother residual norm : " << dynamic_compute_vector_norm(smoother_residual, l) << endl;
 
     //  Restriction
     int n_succ,
@@ -113,7 +114,7 @@ void MG(double *output, double *initial_solution, double *smoother_output, doubl
 
     if (n <= 4)
     {
-        Jacobian(initial_solution_H, delta_H, r_H, smoother_residual_H, 3, height_succ, weight_succ, h_succ, l_succ);
+        Jacobian(initial_solution_H, delta_H, r_H, smoother_residual_H, 10, height_succ, weight_succ, h_succ, l_succ);
     }
     else
     {
@@ -132,17 +133,17 @@ void MG(double *output, double *initial_solution, double *smoother_output, doubl
     dynamic_initialize_zeros_vector(delta_h, l);
     prolungator(delta_H, delta_h, height_succ, weight_succ, height, weight);
     dynamic_compute_residual(smoother_residual, smoother_output, f, weight, height, h_actual);
-    if (level == 0)
-        cout << "level : " << level << "\nsmoother residual norm : " << dynamic_compute_vector_norm(smoother_residual, l) << endl;
+
     for (int i = 0; i < l; i++)
     {
         smoother_output[i] += delta_h[i];
     }
     dynamic_compute_residual(smoother_residual, smoother_output, f, weight, height, h_actual);
-    if (level == 0)
-        cout << "smoother residual norm after adding the delta_h : " << dynamic_compute_vector_norm(smoother_residual, l) << endl;
+    //    cout << "smoother residual norm after adding the delta_h : " << dynamic_compute_vector_norm(smoother_residual, l) << endl;
+
     // Post-smoothing
     Jacobian(smoother_output, output, f, smoother_residual, v2, height, weight, h_actual, l);
+    //    cout << "level : " << level << "\nsmoother residual norm after post-smoothing : " << dynamic_compute_vector_norm(smoother_residual, l) << endl;
 }
 
 void update_global_parameter(int n)
