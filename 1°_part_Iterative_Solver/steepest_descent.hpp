@@ -24,7 +24,7 @@ double compute_alpha_opt(double *r)
 // THIS IS NOT THE CG IS JUST THE GRADIENT DESCENT !!!
 
 // Perform Conjugate Gradient iterations
-bool Steepest_Descent(double *x, double *f, double *r, int *number_iteration_performed, double *residual_reached, vector<double> *residuals, vector<double> *errors, double *x_true)
+bool Steepest_Descent(double *x, double *f, double *r, int *number_iteration_performed, double *residual_reached, vector<double> *residuals, std::vector<std::tuple<int, int, double> > *errors_it_steepest, double *x_true)
 {
 
     double alpha_opt;
@@ -43,9 +43,9 @@ bool Steepest_Descent(double *x, double *f, double *r, int *number_iteration_per
     compute_difference(err, x, x_true);
     norm_error = vector_norm(err) / vector_norm(x_true);
     err_tmp = norm_error;
-    errors->push_back(norm_error);
+    errors_it_steepest->push_back(std::make_tuple(N, 0, norm_error));
 
-    for (int i = 0; i < MAX_ITERATION; i++)
+    for (int i = 1; i < MAX_ITERATION; i++)
     {
         alpha_opt = compute_alpha_opt(r);
 
@@ -67,7 +67,7 @@ bool Steepest_Descent(double *x, double *f, double *r, int *number_iteration_per
         if (norm_residual < EPSILON)
         {
             *number_iteration_performed = i;
-            errors->push_back(norm_error);
+            errors_it_steepest->push_back(std::make_tuple(N, i, norm_error));
             return true;
         }
 

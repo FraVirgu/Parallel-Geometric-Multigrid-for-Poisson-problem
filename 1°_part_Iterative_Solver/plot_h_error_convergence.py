@@ -60,6 +60,7 @@ for method, (sizes, errors) in results.items():
 plt.figure(figsize=(10, 6))
 for method, (sizes, errors) in results.items():
     plt.plot(sizes, errors, label=method)
+
     
 plt.plot(sizes, 1/np.array(sizes)**(2), label ="N^2")
 

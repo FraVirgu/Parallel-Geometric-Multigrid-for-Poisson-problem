@@ -1,5 +1,6 @@
 // CPP
 g++ main.cpp globals.cpp -o main
+g++ -std=c++11 main.cpp globals.cpp -o main
 ./main
 
 

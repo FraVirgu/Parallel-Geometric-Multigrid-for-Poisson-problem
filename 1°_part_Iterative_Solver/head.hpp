@@ -4,6 +4,9 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+#include <tuple>
+#include <string>
+#include <iostream>
 #include <fstream>
 #include "globals.hpp"
 

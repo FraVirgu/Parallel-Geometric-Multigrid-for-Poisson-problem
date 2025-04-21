@@ -12,14 +12,14 @@ double compute_function(double x, double y)
     return sin(p * M_PI * x / a) * sin(q * M_PI * y / a);
 }
 
-void JacobiCall(double *x, double *x_new, double *r, double *f, double *residual_reached, int *number_iteration_performed, std::vector<double> *residuals_jacobian, std::vector<double> *error_jacobian, double *x_true)
+void JacobiCall(double *x, double *x_new, double *r, double *f, double *residual_reached, int *number_iteration_performed, std::vector<double> *residuals_jacobian, std::vector<std::tuple<int, int, double> > *errors_it_j , double *x_true)
 {
     initialize_zeros_vector(x);
     initialize_zeros_vector(x_new); // Ensure x_tmp is also initialized
     initialize_zeros_vector(r);
     cout << "_____  Jacobian:" << endl;
-    bool result = Jacobian(x, x_new, f, r, residual_reached, number_iteration_performed, residuals_jacobian, error_jacobian, x_true);
-    cout << "error jacobian: " << error_jacobian->back() << endl;
+    bool result = Jacobian(x, x_new, f, r, residual_reached, number_iteration_performed, residuals_jacobian, errors_it_j, x_true);
+    cout << "error jacobian: " << std::get<2>(errors_it_j->back()) << endl;
     if (result)
     {
         std::cout << "Number of iteration performed: " << *number_iteration_performed << std::endl;
@@ -32,12 +32,12 @@ void JacobiCall(double *x, double *x_new, double *r, double *f, double *residual
     }
 }
 
-void SteepestDescentCall(double *x, double *f, double *r, int *number_iteration_performed, double *residual_reached, std::vector<double> *residuals_cg, std::vector<double> *error_cg, double *x_true)
+void SteepestDescentCall(double *x, double *f, double *r, int *number_iteration_performed, double *residual_reached, std::vector<double> *residuals_cg, std::vector<std::tuple<int, int, double> > *errors_it_steepest, double *x_true)
 {
     initialize_zeros_vector(x);
     initialize_zeros_vector(r);
     cout << "_____  Steepest-Descent :" << endl;
-    bool result = Steepest_Descent(x, f, r, number_iteration_performed, residual_reached, residuals_cg, error_cg, x_true);
+    bool result = Steepest_Descent(x, f, r, number_iteration_performed, residual_reached, residuals_cg, errors_it_steepest, x_true);
 
     if (result)
     {
@@ -51,12 +51,12 @@ void SteepestDescentCall(double *x, double *f, double *r, int *number_iteration_
     }
 }
 
-void GaussSeidelCall(double *x, double *f, double *r, double *residual_reached, int *number_iteration_performed, std::vector<double> *residuals_gs, std::vector<double> *error_gs, double *x_true)
+void GaussSeidelCall(double *x, double *f, double *r, double *residual_reached, int *number_iteration_performed, std::vector<double> *residuals_gs, std::vector<std::tuple<int, int, double> > *errors_it_gs, double *x_true)
 {
     initialize_zeros_vector(x);
     initialize_zeros_vector(r);
     cout << "_____  Gauss-Seidel:" << endl;
-    bool result = GaussSeidel(x, f, r, residual_reached, number_iteration_performed, residuals_gs, error_gs, x_true);
+    bool result = GaussSeidel(x, f, r, residual_reached, number_iteration_performed, residuals_gs, errors_it_gs, x_true);
     if (result)
     {
         std::cout << "Number of iteration performed: " << *number_iteration_performed << std::endl;
@@ -69,25 +69,25 @@ void GaussSeidelCall(double *x, double *f, double *r, double *residual_reached, 
     }
 }
 
-void ConiugateGradientCall(double *x, double *f, double *r, double *p_d, double *Ap_d, double *residual_reached, int *number_iteration_performed, std::vector<double> *residuals_cg, std::vector<double> *error_cg, double *x_true)
+void ConiugateGradientCall(double *x, double *f, double *r, double *p_d, double *Ap_d, double *residual_reached, int *number_iteration_performed, std::vector<double> *residuals_cg, std::vector<std::tuple<int, int, double> > *errors_it_cg, double *x_true)
 {
     initialize_zeros_vector(x);
     initialize_zeros_vector(r);
     initialize_zeros_vector(p_d);
     initialize_zeros_vector(Ap_d);
     cout << "_____  Conjugate Gradient:" << endl;
-    bool result = conjugate_gradient(x, f, r, p_d, Ap_d, number_iteration_performed, residual_reached, residuals_cg, error_cg, x_true);
+    bool result = conjugate_gradient(x, f, r, p_d, Ap_d, number_iteration_performed, residual_reached, residuals_cg, errors_it_cg, x_true);
     if (result)
     {
         std::cout << "Number of iteration performed: " << *number_iteration_performed << std::endl;
         std::cout << "Residual reached: " << *residual_reached << std::endl;
-        cout << "error cg: " << error_cg->back() << endl;
+        cout << "error cg: " << std::get<2>(errors_it_cg->back()) << endl;
     }
     else
     {
         std::cout << "Did not converge within the maximum number of iterations." << std::endl;
         std::cout << "Residual reached: " << *residual_reached << std::endl;
-        cout << "error cg: " << error_cg->back() << endl;
+        cout << "error cg: " << std::get<2>(errors_it_cg->back()) << endl;
     }
 }
 

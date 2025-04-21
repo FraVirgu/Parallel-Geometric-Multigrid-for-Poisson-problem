@@ -1,7 +1,7 @@
 #include "head.hpp"
 
 // Perform Gauss-Seidel iterations
-bool GaussSeidel(double *x, double *f, double *r, double *residual_reached, int *number_iteration_performed, vector<double> *residuals, vector<double> *errors, double *x_true)
+bool GaussSeidel(double *x, double *f, double *r, double *residual_reached, int *number_iteration_performed, vector<double> *residuals, std::vector<std::tuple<int, int, double> > *errors_it_gs, double *x_true)
 {
     double norm_residual;
     double *err = new double[L];
@@ -15,9 +15,9 @@ bool GaussSeidel(double *x, double *f, double *r, double *residual_reached, int 
     //  Compute initial error
     compute_difference(err, x, x_true);
     norm_error = vector_norm(err) / vector_norm(x_true);
-    errors->push_back(norm_error);
+    errors_it_gs->push_back(std::make_tuple(N, 0, norm_error));
 
-    for (int i = 0; i < MAX_ITERATION; i++)
+    for (int i = 1; i < MAX_ITERATION; i++)
     {
         // Perform Gauss-Seidel iteration (update x in place)
         for (int y = 1; y < H - 1; y++)
@@ -38,7 +38,7 @@ bool GaussSeidel(double *x, double *f, double *r, double *residual_reached, int 
         // Compute the error
         compute_difference(err, x, x_true);
         norm_error = vector_norm(err) / vector_norm(x_true);
-        errors->push_back(norm_error);
+        errors_it_gs->push_back(std::make_tuple(N, i, norm_error));
 
         //  Convergence check (residual)
         if (norm_residual < EPSILON)

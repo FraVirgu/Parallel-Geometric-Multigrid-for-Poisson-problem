@@ -254,3 +254,44 @@ void save_error_h_to_file(std::vector<std::pair<int, double> > &error_j, std::ve
         std::cerr << "Unable to open file for writing Conjugate Gradient errors.\n";
     }
 }
+
+#include <fstream>
+#include <tuple>
+#include <vector>
+#include <string>
+#include <iostream>
+
+void save_errors_to_files(
+    const std::vector<std::tuple<int, int, double>> &errors_it_j,
+    const std::vector<std::tuple<int, int, double>> &errors_it_gs,
+    const std::vector<std::tuple<int, int, double>> &errors_it_steepest,
+    const std::vector<std::tuple<int, int, double>> &errors_it_cg)
+{
+    create_directory_if_not_exists("OUTPUT_RESULT");
+
+    // Helper lambda to write each error vector to a specific file
+    auto save_to_file = [](const std::vector<std::tuple<int, int, double>> &errors, const std::string &filename) {
+        std::ofstream file("OUTPUT_RESULT/" + filename);
+        if (file.is_open())
+        {
+            for (const auto &entry : errors)
+            {
+                int N, iteration;
+                double error;
+                std::tie(N, iteration, error) = entry;
+                file << N << " " << iteration << " " << error << "\n";
+            }
+            file.close();
+        }
+        else
+        {
+            std::cerr << "Unable to open file " << filename << " for writing errors\n";
+        }
+    };
+
+    // Save each method’s errors to its own file
+    save_to_file(errors_it_j, "errors_it_j.txt");
+    save_to_file(errors_it_gs, "errors_it_gs.txt");
+    save_to_file(errors_it_steepest, "errors_it_steepest.txt");
+    save_to_file(errors_it_cg, "errors_it_cg.txt");
+}

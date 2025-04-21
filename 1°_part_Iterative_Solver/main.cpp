@@ -17,7 +17,10 @@ void singleRun()
     std::vector<double> *error_gs = new std::vector<double>();
     std::vector<double> *error_cg = new std::vector<double>();
 
-    std::vector<double> *final_error_norm = new std::vector<double>();
+    std::vector<std::tuple<int, int, double> > errors_it_j;
+    std::vector<std::tuple<int, int, double> > errors_it_gs;
+    std::vector<std::tuple<int, int, double> > errors_it_steepest;
+    std::vector<std::tuple<int, int, double> > errors_it_cg;
 
     double *x = new double[L];
     double *x_tmp = new double[L];
@@ -32,10 +35,10 @@ void singleRun()
     compute_rhs(f);
     compute_exact_solution(x_true, compute_function);
 
-    //  JacobiCall(x, x_tmp, res, f, residual_reached, number_iteration_performed, residuals_jacobian, error_jacobian, x_true);
-    // SteepestDescentCall(x, f, res, number_iteration_performed, residual_reached, residuals_steepest, error_steepest, x_true);
-    // GaussSeidelCall(x, f, res, residual_reached, number_iteration_performed, residuals_gs, error_gs, x_true);
-    ConiugateGradientCall(x, f, res, p_d, Ap_d, residual_reached, number_iteration_performed, residuals_cg, error_cg, x_true);
+    JacobiCall(x, x_tmp, res, f, residual_reached, number_iteration_performed, residuals_jacobian, &errors_it_j, x_true);
+    SteepestDescentCall(x, f, res, number_iteration_performed, residual_reached, residuals_steepest, &errors_it_gs, x_true);
+    GaussSeidelCall(x, f, res, residual_reached, number_iteration_performed, residuals_gs, &errors_it_steepest, x_true);
+    ConiugateGradientCall(x, f, res, p_d, Ap_d, residual_reached, number_iteration_performed, residuals_cg, &errors_it_cg, x_true);
 
     free(x);
     free(x_tmp);
@@ -43,7 +46,7 @@ void singleRun()
     free(number_iteration_performed);
     free(residual_reached);
     save_residuals_to_file(residuals_jacobian, residuals_steepest, residuals_gs, residuals_cg);
-    save_error_to_file(error_jacobian, error_steepest, error_gs, error_cg);
+    //save_error_to_file(error_jacobian, error_steepest, error_gs, error_cg); FIX
 
     delete residuals_jacobian;
     delete residuals_steepest;
@@ -53,17 +56,19 @@ void singleRun()
 /**
  * @brief Same as singleRun : runs iterative solvers and records their residuals and errors.
  */
-void timeSingleRun(std::vector<std::pair<int, double>> &timings_jacobi, std::vector<std::pair<int, double>> &timings_gs, std::vector<std::pair<int, double>> &timings_steepest, std::vector<std::pair<int, double>> &timings_cg, std::vector<std::pair<int, double>> &error_grid_jacobian, std::vector<std::pair<int, double>> &error_grid_steepest, std::vector<std::pair<int, double>> &error_grid_gs, std::vector<std::pair<int, double>> &error_grid_cg)
+void timeSingleRun(std::vector<std::pair<int, double> > &timings_jacobi, std::vector<std::pair<int, double> > &timings_gs, std::vector<std::pair<int, double> > &timings_steepest, std::vector<std::pair<int, double> > &timings_cg,
+                   std::vector<std::pair<int, double> > &error_grid_jacobian, std::vector<std::pair<int, double> > &error_grid_gs, std::vector<std::pair<int, double> > &error_grid_steepest, std::vector<std::pair<int, double> > &error_grid_cg,
+                   std::vector<std::tuple<int, int, double> > *errors_it_j, std::vector<std::tuple<int, int, double> > *errors_it_gs, std::vector<std::tuple<int, int, double> > *errors_it_steepest, std::vector<std::tuple<int, int, double> > *errors_it_cg)
 {
     std::vector<double> *residuals_jacobian = new std::vector<double>();
     std::vector<double> *residuals_steepest = new std::vector<double>();
     std::vector<double> *residuals_gs = new std::vector<double>();
     std::vector<double> *residuals_cg = new std::vector<double>();
 
-    std::vector<double> *error_jacobian = new std::vector<double>();
-    std::vector<double> *error_steepest = new std::vector<double>();
-    std::vector<double> *error_gs = new std::vector<double>();
-    std::vector<double> *error_cg = new std::vector<double>();
+    //std::vector<double> *error_jacobian = new std::vector<double>();
+    //std::vector<double> *error_steepest = new std::vector<double>();
+    //std::vector<double> *error_gs = new std::vector<double>();
+    //std::vector<double> *error_cg = new std::vector<double>();
 
     double *x = new double[L];
     double *x_tmp = new double[L];
@@ -81,36 +86,36 @@ void timeSingleRun(std::vector<std::pair<int, double>> &timings_jacobi, std::vec
 
     // Jacobi
     auto start_jacobi = std::chrono::high_resolution_clock::now();
-    JacobiCall(x, x_tmp, res, f, residual_reached, number_iteration_performed, residuals_jacobian, error_jacobian, x_true);
+    JacobiCall(x, x_tmp, res, f, residual_reached, number_iteration_performed, residuals_jacobian, errors_it_j, x_true);
     auto end_jacobi = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_jacobi = end_jacobi - start_jacobi;
     timings_jacobi.push_back(std::make_pair(N, elapsed_jacobi.count()));
-    error_grid_jacobian.push_back(std::make_pair(N, error_jacobian->back()));
-
-    // Steepest Descent
-    auto start_steepest = std::chrono::high_resolution_clock::now();
-    SteepestDescentCall(x, f, res, number_iteration_performed, residual_reached, residuals_steepest, error_steepest, x_true);
-    auto end_steepest = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed_steepest = end_steepest - start_steepest;
-    timings_steepest.push_back(std::make_pair(N, elapsed_steepest.count()));
-    error_grid_steepest.push_back(std::make_pair(N, error_steepest->back()));
-
+    error_grid_jacobian.push_back(std::make_pair(N, std::get<2>(errors_it_j->back())));
+    
     // Gauss Seidel
     auto start_gs = std::chrono::high_resolution_clock::now();
-    GaussSeidelCall(x, f, res, residual_reached, number_iteration_performed, residuals_gs, error_gs, x_true);
+    GaussSeidelCall(x, f, res, residual_reached, number_iteration_performed, residuals_gs, errors_it_gs, x_true);
     auto end_gs = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_gs = end_gs - start_gs;
     timings_gs.push_back(std::make_pair(N, elapsed_gs.count()));
-    error_grid_gs.push_back(std::make_pair(N, error_gs->back()));
+    error_grid_gs.push_back(std::make_pair(N, std::get<2>(errors_it_gs->back())));
+
+    // Steepest Descent
+    auto start_steepest = std::chrono::high_resolution_clock::now();
+    SteepestDescentCall(x, f, res, number_iteration_performed, residual_reached, residuals_steepest, errors_it_steepest, x_true);
+    auto end_steepest = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed_steepest = end_steepest - start_steepest;
+    timings_steepest.push_back(std::make_pair(N, elapsed_steepest.count()));
+    error_grid_steepest.push_back(std::make_pair(N, std::get<2>(errors_it_steepest->back())));
 
     // Conjugate Gradient
     auto start_cg = std::chrono::high_resolution_clock::now();
-    ConiugateGradientCall(x, f, res, p_d, Ap_d, residual_reached, number_iteration_performed, residuals_cg, error_cg, x_true);
+    ConiugateGradientCall(x, f, res, p_d, Ap_d, residual_reached, number_iteration_performed, residuals_cg, errors_it_cg, x_true);
     auto end_cg = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_cg = end_cg - start_cg;
     timings_cg.push_back(std::make_pair(N, elapsed_cg.count()));
-    error_grid_cg.push_back(std::make_pair(N, error_cg->back()));
-
+    error_grid_cg.push_back(std::make_pair(N, std::get<2>(errors_it_cg->back())));
+    
     free(x);
     free(x_tmp);
     free(f);
@@ -120,8 +125,7 @@ void timeSingleRun(std::vector<std::pair<int, double>> &timings_jacobi, std::vec
     delete residuals_jacobian;
     delete residuals_steepest;
     delete residuals_gs;
-
-    delete error_jacobian;
+    delete residuals_cg;
 }
 
 /**
@@ -134,30 +138,36 @@ void timeSingleRun(std::vector<std::pair<int, double>> &timings_jacobi, std::vec
 void multipleRun()
 {
     vector<int> n = n_initialization();
-    std::vector<std::pair<int, double>> timings_jacobi;
-    std::vector<std::pair<int, double>> timings_gs;
-    std::vector<std::pair<int, double>> timings_steepest;
-    std::vector<std::pair<int, double>> timings_cg;
+    std::vector<std::pair<int, double> > timings_jacobi;
+    std::vector<std::pair<int, double> > timings_gs;
+    std::vector<std::pair<int, double> > timings_steepest;
+    std::vector<std::pair<int, double> > timings_cg;
 
-    std::vector<std::pair<int, double>> error_j;
-    std::vector<std::pair<int, double>> error_gs;
-    std::vector<std::pair<int, double>> error_steepest;
-    std::vector<std::pair<int, double>> error_cg;
+    std::vector<std::pair<int, double> > grid_error_jacobian;
+    std::vector<std::pair<int, double> > grid_error_gs;
+    std::vector<std::pair<int, double> > grid_error_steepest;
+    std::vector<std::pair<int, double> > grid_error_cg;
+
+    std::vector<std::tuple<int, int, double> > errors_it_j;
+    std::vector<std::tuple<int, int, double> > errors_it_gs;
+    std::vector<std::tuple<int, int, double> > errors_it_steepest;
+    std::vector<std::tuple<int, int, double> > errors_it_cg;
 
     for (int i = 0; i < n.size(); i++)
     {
         parameter_initialization(n[i], 1000000, 1e-7, 1.0, 1.0, 1.0);
         cout << "\t\t\t\t\t\t\t\t\t   N: " << N << endl;
-        timeSingleRun(timings_jacobi, timings_gs, timings_steepest, timings_cg, error_j, error_gs, error_steepest, error_cg);
+        timeSingleRun(timings_jacobi, timings_gs, timings_steepest, timings_cg, grid_error_jacobian, grid_error_gs, grid_error_steepest, grid_error_cg, &errors_it_j, &errors_it_gs, &errors_it_steepest, &errors_it_cg);
     }
 
     save_timings_to_file(timings_jacobi, timings_gs, timings_steepest, timings_cg);
-    save_error_h_to_file(error_j, error_gs, error_steepest, error_cg);
+    save_error_h_to_file(grid_error_jacobian, grid_error_gs, grid_error_steepest, grid_error_cg);
+    save_errors_to_files(errors_it_j, errors_it_gs, errors_it_steepest, errors_it_cg);
 }
 
 int main()
 {
-    singleRun();
-    // multipleRun();
+    //singleRun();
+    multipleRun();
     return 0;
 }

@@ -40,7 +40,7 @@ void compute_inner_product_with_A(double *r, double *result)
     }
 }
 
-bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap_d, int *number_iteration_performed, double *residual_reached, vector<double> *residuals, std::vector<double> *error_cg, double *x_true)
+bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap_d, int *number_iteration_performed, double *residual_reached, vector<double> *residuals, std::vector<std::tuple<int, int, double> > *errors_it_cg, double *x_true)
 {
     double alpha, beta, res_tmp, norm_residual, err_tmp, norm_error;
     double *err = new double[L];
@@ -56,7 +56,7 @@ bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap
     compute_difference(err, x, x_true);
     norm_error = vector_norm(err) / vector_norm(x_true);
     err_tmp = norm_error;
-    error_cg->push_back(norm_error);
+    errors_it_cg->push_back(std::make_tuple(N, 0, norm_error));
 
     // Initialize search direction: p = r
     for (int j = 0; j < L; j++)
@@ -64,7 +64,7 @@ bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap
         p_d[j] = r[j];
     }
 
-    for (int i = 0; i < MAX_ITERATION; i++)
+    for (int i = 1; i < MAX_ITERATION; i++)
     {
 
         // Compute p_d^(k)^Tr^(k)
@@ -109,7 +109,7 @@ bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap
         if (norm_error <= err_tmp)
         {
             err_tmp = norm_error;
-            error_cg->push_back(norm_error);
+            errors_it_cg->push_back(std::make_tuple(N, i, norm_error));
         }
 
         // Convergence check
@@ -122,7 +122,7 @@ bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap
             compute_difference(err, x, x_true);
             norm_error = vector_norm(err) / vector_norm(x_true);
             err_tmp = norm_error;
-            error_cg->push_back(norm_error);
+            errors_it_cg->push_back(std::make_tuple(N, i, norm_error));
 
             return true;
         }
@@ -137,12 +137,12 @@ bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap
             p_d[j] = r[j] + beta * p_d[j];
         }
     }
-
+    /*
     // compute initial error
     compute_difference(err, x, x_true);
     norm_error = vector_norm(err) / vector_norm(x_true);
     err_tmp = norm_error;
-    error_cg->push_back(norm_error);
-
+    errors_it_cg->push_back(std::make_tuple(N, 0, norm_error));
+    */
     return false;
 }
