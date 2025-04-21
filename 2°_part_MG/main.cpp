@@ -1,6 +1,28 @@
 #include "operator.hpp"
 #include "jacobian.hpp"
 bool save_solution_MG = false;
+
+double compute_function(double x, double y)
+{
+    return sin(p * M_PI * x / a) * sin(q * M_PI * y / a);
+}
+
+void compute_exact_solution(double *u, double (*func)(double, double))
+{
+    double dx = h;
+    double dy = h;
+
+    for (int y = 0; y < H; y++)
+    {
+        for (int x = 0; x < W; x++)
+        {
+            double x_val = x * dx;
+            double y_val = y * dy;
+            u[y * W + x] = func(x_val, y_val);
+        }
+    }
+}
+
 void save_solution_to_file(double *x, int height, int length)
 {
     std::ofstream file("solution.txt");
@@ -50,6 +72,8 @@ auto MGCall()
 {
     cout << "\nMULTIGRID METHOD" << endl;
     double *x = new double[L];
+    double *x_true = new double[L];
+    double *err = new double[L];
     double *output = new double[L];
     double *smoother_output = new double[L];
     double *f = new double[L];
@@ -59,19 +83,27 @@ auto MGCall()
     dynamic_initialize_zeros_vector(smoother_output, L);
     dynamic_initialize_zeros_vector(res, L);
     dynamic_compute_rhs(f, W, H, h);
+
     int level = 0;
     auto start_MG = chrono::high_resolution_clock::now();
     MG(output, x, smoother_output, f, res, v1, v2, level, N, L, W, H, h);
     auto end_MG = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::milliseconds>(end_MG - start_MG).count();
     cout << "Multigrid time: " << chrono::duration_cast<chrono::milliseconds>(end_MG - start_MG).count() << "ms" << endl;
+    // true solution
+    compute_exact_solution(x_true, compute_function);
+    compute_difference(err, x, x_true);
+    double err_norm = dynamic_compute_vector_norm(err, L);
+
     dynamic_initialize_zeros_vector(res, L);
     dynamic_compute_residual(res, output, f, W, H, h);
     double res_norm = dynamic_compute_vector_norm(res, L);
     double f_norm = dynamic_compute_vector_norm(f, L);
-    double norm_residual = res_norm / f_norm;
-    cout << "Residual norm: " << norm_residual << endl;
 
+    double norm_residual = res_norm / f_norm;
+    double norm_error = err_norm / dynamic_compute_vector_norm(x_true, L);
+    cout << "Residual norm: " << norm_residual << endl;
+    cout << "Error norm: " << norm_error << endl;
     return duration;
 }
 
