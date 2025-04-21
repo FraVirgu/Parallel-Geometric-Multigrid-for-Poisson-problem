@@ -43,16 +43,25 @@ def plot_error_comparison_per_N():
 
     # Plot per N
     for N in sorted(Ns_union):
-        # --- Linear plot ---
-        plt.figure(figsize=(10, 5))
+        max_iters = 0
+        method_data = {}
+
+        # Collect method data and compute max iterations
         for method, curves in all_curves.items():
             if N in curves:
                 iterations, errors = zip(*curves[N])
-                plt.plot(iterations, errors, label=method)
-        # Add a reference curve, skipping i=0 to avoid division by zero
-        ref_iterations = [i for i in iterations if i != 0]
-        ref_values = [1 / (i * i) for i in ref_iterations]
-        plt.plot(ref_iterations, ref_values, label="1/i² (reference)", linestyle='--', color='gray')
+                method_data[method] = (iterations, errors)
+                max_iters = max(max_iters, max(iterations))
+
+        # Generate reference iterations
+        ref_iterations = list(range(max_iters + 1))
+        ref_line = [1 / N**2] * len(ref_iterations)
+
+        # --- Linear plot ---
+        plt.figure(figsize=(10, 5))
+        for method, (iterations, errors) in method_data.items():
+            plt.plot(iterations, errors, label=method)
+        plt.plot(ref_iterations, ref_line, label="1/N²", linestyle='--', color='gray')
 
         plt.xlabel("Iteration")
         plt.ylabel("Error")
@@ -65,14 +74,15 @@ def plot_error_comparison_per_N():
 
         # --- Log-log plot ---
         plt.figure(figsize=(10, 5))
-        for method, curves in all_curves.items():
-            if N in curves:
-                iterations, errors = zip(*curves[N])
-                iterations_log = [i if i > 0 else 1 for i in iterations]
-                errors_log = [e if e > 0 else 1e-16 for e in errors]
-                plt.plot(iterations_log, errors_log, label=method)
-        plt.plot(iterations_log, [1/((i*i)+1) for i in iterations_log], label="1/N^2", linestyle='--', color='gray')
-        
+        for method, (iterations, errors) in method_data.items():
+            iterations_log = [i if i > 0 else 1 for i in iterations]
+            errors_log = [e if e > 0 else 1e-16 for e in errors]
+            plt.plot(iterations_log, errors_log, label=method)
+
+        ref_iterations_log = [i if i > 0 else 1 for i in ref_iterations]
+        ref_line_log = [e if e > 0 else 1e-16 for e in ref_line]
+        plt.plot(ref_iterations_log, ref_line_log, label="1/N²", linestyle='--', color='gray')
+
         plt.xscale('log')
         plt.yscale('log')
         plt.xlabel("Iteration (log)")
@@ -83,6 +93,5 @@ def plot_error_comparison_per_N():
         plt.tight_layout()
         plt.savefig(os.path.join(plot_dir, f"comparison_N{N}_loglog.pdf"))
         plt.close()
-
 
 plot_error_comparison_per_N()
