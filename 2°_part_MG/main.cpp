@@ -25,15 +25,18 @@ void JacobiCall()
     double *smoother_output = new double[L];
     double *f = new double[L];
     double *res = new double[L];
-    initialize_zeros_vector(x);
-    compute_rhs(f);
 
+    dynamic_initialize_zeros_vector(x, L);
+    dynamic_compute_rhs(f, W, H, h);
+    dynamic_compute_residual(res, output, f, W, H, h);
+    cout << "Initial residual norm: " << dynamic_vector_norm(res, L) << endl;
     auto start = chrono::high_resolution_clock::now();
-    Jacobi(x, output, f, 10000, H, W, h, L);
+    Jacobi(x, output, f, 12958, H, W, h, L);
     auto end = chrono::high_resolution_clock::now();
-    compute_residual(res, output, f);
+    dynamic_compute_residual(res, output, f, W, H, h);
+    double norm_residual = dynamic_vector_norm(res, L) / dynamic_vector_norm(f, L);
     cout << "Jacobi time: " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << "ms" << endl;
-    cout << "Residual norm: " << vector_norm(res) << endl;
+    cout << "Residual norm: " << norm_residual << endl;
 }
 
 auto MGCall()
@@ -50,16 +53,17 @@ auto MGCall()
     initialize_zeros_vector(smoother_output);
     initialize_zeros_vector(res);
     compute_rhs(f);
+    compute_residual(res, output, f);
+    // cout << "Initial residual norm: " << vector_norm(res) << endl;
     int level = 0;
     auto start_MG = chrono::high_resolution_clock::now();
     MG(output, x, smoother_output, f, res, v1, v2, level, N, L, W, H, h);
     auto end_MG = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::milliseconds>(end_MG - start_MG).count();
     cout << "Multigrid time: " << chrono::duration_cast<chrono::milliseconds>(end_MG - start_MG).count() << "ms" << endl;
-    initialize_zeros_vector(res);
     compute_residual(res, output, f);
-    cout << "Residual norm: " << vector_norm(res) << endl;
-
+    cout << "Residual norm: " << vector_norm(res) / dynamic_vector_norm(f, L) << endl;
+    cout << "Iteration performed: " << iteration_performed << endl;
     return duration;
 }
 
@@ -120,6 +124,31 @@ auto ConiugateGradientCall()
     return duration;
 }
 
+auto DirectMethod()
+{
+    double *x = new double[L];
+    double *x_true = new double[L];
+    double *err = new double[L];
+    double *f = new double[L];
+    double *res = new double[L];
+    initialize_zeros_vector(x);
+    compute_rhs(f);
+    initialize_zeros_vector(res);
+    cout << "\nDIRECT METHOD:" << endl;
+    auto start_Direct = chrono::high_resolution_clock::now();
+    poisson_direct_solver(N, a, f, x);
+    compute_residual(res, x, f);
+    compute_exact_solution(x_true, compute_function);
+    compute_difference(err, x, x_true);
+    double norm_err = vector_norm(err);
+    auto end_Direct = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::milliseconds>(end_Direct - start_Direct).count();
+    cout << "Direct method time: " << chrono::duration_cast<chrono::milliseconds>(end_Direct - start_Direct).count() << "ms" << endl;
+    std::cout << "Residual norm: " << vector_norm(res) / dynamic_vector_norm(f, L) << std::endl;
+    std::cout << "Error norm: " << norm_err << std::endl;
+    return duration;
+}
+
 vector<int> n_initialization()
 {
     vector<int> n;
@@ -132,11 +161,11 @@ vector<int> n_initialization()
 
 int main()
 {
-    vector<int> n = n_initialization();
-    /*
+    // vector<int> n = n_initialization();
 
- vector<int> n;
+    vector<int> n;
     n.push_back(N);
+    /*
     save_solution_MG = true;
     */
 
@@ -148,13 +177,16 @@ int main()
     {
         update_global_parameter(n[i]);
         cout << "\n----------------\tN: " << N << endl;
-        auto duration_CG = ConiugateGradientCall();
-        auto duration_MG = MGCall();
-        auto duration_FMG = FMgCall();
+        //  DirectMethod();
+        // JacobiCall();
 
-        timings_CG.push_back(std::make_pair(N, duration_CG));
-        timings_MG.push_back(std::make_pair(N, duration_MG));
-        timings_FMG.push_back(std::make_pair(N, duration_FMG));
+        // auto duration_CG = ConiugateGradientCall();
+        auto duration_MG = MGCall();
+        // auto duration_FMG = FMgCall();
+
+        // timings_CG.push_back(std::make_pair(N, duration_CG));
+        // timings_MG.push_back(std::make_pair(N, duration_MG));
+        // timings_FMG.push_back(std::make_pair(N, duration_FMG));
     }
 
     save_timings_to_file(timings_CG, timings_MG, timings_FMG);
