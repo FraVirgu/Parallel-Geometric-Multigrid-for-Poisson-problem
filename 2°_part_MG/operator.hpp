@@ -26,7 +26,7 @@ void prolungator(double *input, double *output, int input_H, int input_W, int ou
                     {
                         if (x == 0 || x == output_W - 1 || y == 0 || y == output_H - 1)
                         {
-                            output[y * output_W + x] = 0.0; // Enforce boundary condition
+                            // output[y * output_W + x] = 0.0; // Enforce boundary condition
                         }
                         else
                         {
@@ -48,7 +48,7 @@ void restriction(double *input, double *output, int input_H, int input_W, int ou
         {
             if (i == 0 || i == output_H - 1 || j == 0 || j == output_W - 1) // Enforce boundary condition
             {
-                output[i * output_W + j] = 0.0;
+                // output[i * output_W + j] = 0.0;
             }
             else
             {
@@ -97,7 +97,7 @@ void MG(double *output, double *initial_solution, double *smoother_output, doubl
     height_succ = n_succ;
     h_succ = 1.0 / (n_succ - 1);
     double *r_H = new double[l_succ];
-    dynamic_initialize_zeros_vector(r_H, l_succ);
+    // dynamic_initialize_zeros_vector(r_H, l_succ);
     restriction(smoother_residual, r_H, height, weight, height_succ, weight_succ);
 
     // Initialize vectors for coarse grid
@@ -105,14 +105,14 @@ void MG(double *output, double *initial_solution, double *smoother_output, doubl
     double *delta_H = new double[l_succ];
     double *smoother_output_H = new double[l_succ];
     double *smoother_residual_H = new double[l_succ];
-    dynamic_initialize_zeros_vector(initial_solution_H, l_succ);
-    dynamic_initialize_zeros_vector(delta_H, l_succ);
-    dynamic_initialize_zeros_vector(smoother_output_H, l_succ);
-    dynamic_initialize_zeros_vector(smoother_residual_H, l_succ);
+    // dynamic_initialize_zeros_vector(initial_solution_H, l_succ);
+    // dynamic_initialize_zeros_vector(delta_H, l_succ);
+    // dynamic_initialize_zeros_vector(smoother_output_H, l_succ);
+    // dynamic_initialize_zeros_vector(smoother_residual_H, l_succ);
 
-    if (n <= 2)
+    if (n <= 32)
     {
-        Jacobi(initial_solution_H, delta_H, r_H, 1, height_succ, weight_succ, h_succ, l_succ);
+        Jacobi(initial_solution_H, delta_H, r_H, 10, height_succ, weight_succ, h_succ, l_succ);
     }
     else
     {

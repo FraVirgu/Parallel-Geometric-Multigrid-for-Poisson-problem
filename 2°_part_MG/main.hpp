@@ -33,11 +33,26 @@ bool Jacobi(double *x, double *x_new, double *f, int v, int height, int weight, 
     return false;
 }
 
-// Initialize helper functions
+void compute_exact_solution(double *u, double (*func)(double, double))
+{
+    double dx = h;
+    double dy = h;
+
+    for (int y = 0; y < H; y++)
+    {
+        for (int x = 0; x < W; x++)
+        {
+            double x_val = x * dx;
+            double y_val = y * dy;
+            u[y * W + x] = func(x_val, y_val);
+        }
+    }
+}
+
 void compute_rhs(double *f)
 {
-    double dx = a / W;
-    double dy = a / H;
+    double dx = h;
+    double dy = h;
     double factor = (M_PI * M_PI / (a * a)) * (p * p + q * q);
 
     for (int y = 0; y < H; y++)
@@ -48,17 +63,18 @@ void compute_rhs(double *f)
             double y_val = y * dy;
 
             // Apply Dirichlet boundary condition: f = 0 at the boundaries
-            if (x == 0 || x == W - 1 || y == 0 || y == H - 1)
-            {
-                f[y * W + x] = 0.0;
-            }
-            else
-            {
-                f[y * W + x] = factor * sin(p * M_PI * x_val / a) * sin(q * M_PI * y_val / a);
-            }
+            // if (x == 0 || x == W - 1 || y == 0 || y == H - 1)
+            //{
+            //    f[y * W + x] = 0.0;
+            //}
+            // else
+            //{
+            f[y * W + x] = factor * sin(p * M_PI * x_val / a) * sin(q * M_PI * y_val / a);
+            //}
         }
     }
 }
+
 void compute_residual(double *r, double *x, double *f)
 {
     for (int y = 1; y < H - 1; y++)
@@ -98,7 +114,7 @@ void dynamic_compute_residual(double *r, double *x, double *f, int weight, int h
         for (int x_pos = 1; x_pos < weight - 1; x_pos++)
         {
             int index = y * weight + x_pos;
-            r[index] = ((h_actual * h_actual) * f[index] - 4 * x[index] + x[index - 1] + x[index + 1] + x[index - weight] + x[index + weight]);
+            r[index] = (f[index] - (1 / (h_actual * h_actual)) * (4 * x[index] - x[index - 1] - x[index + 1] - x[index - weight] - x[index + weight]));
         }
     }
 }

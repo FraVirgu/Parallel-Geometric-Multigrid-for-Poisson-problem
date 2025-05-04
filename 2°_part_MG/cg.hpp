@@ -37,7 +37,8 @@ void compute_inner_product_with_A(double *r, double *result)
 bool conjugate_gradient(double *x, double *f, double *r, double *p_d, double *Ap_d, int *number_iteration_performed, double *residual_reached)
 {
     double alpha, beta, norm_residual, res_tmp, err_tmp, norm_error;
-    compute_residual(r, x, f);
+    dynamic_compute_residual(r, x, f, W, H, h);
+
     // Initialize search direction: p = r
     for (int j = 0; j < L; j++)
     {

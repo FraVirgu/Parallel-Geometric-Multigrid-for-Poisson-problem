@@ -44,6 +44,7 @@ auto MGCall()
     double *smoother_output = new double[L];
     double *f = new double[L];
     double *res = new double[L];
+
     initialize_zeros_vector(x);
     initialize_zeros_vector(output);
     initialize_zeros_vector(smoother_output);
@@ -122,7 +123,7 @@ auto ConiugateGradientCall()
 vector<int> n_initialization()
 {
     vector<int> n;
-    for (int i = 4; i <= N; i = i * 2)
+    for (int i = 32; i <= N; i = i * 2)
     {
         n.push_back(i);
     }
@@ -131,11 +132,13 @@ vector<int> n_initialization()
 
 int main()
 {
-    // vector<int> n = n_initialization();
+    vector<int> n = n_initialization();
+    /*
 
-    vector<int> n;
+ vector<int> n;
     n.push_back(N);
     save_solution_MG = true;
+    */
 
     std::vector<std::pair<int, double>> timings_CG;
     std::vector<std::pair<int, double>> timings_MG;
