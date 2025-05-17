@@ -14,22 +14,23 @@ The solver handles the Poisson problem with homogeneous Dirichlet boundary condi
   - Restriction
   - Prolongation
   - Residual calculation
+  - MG
 
 ## Folder Structure
 
 .
-├── 1_part_Smoother_Comparison       # Sequential solvers
-│   └── main.cpp
-├── 2_part_MG                        # Multigrid CPU implementation
-│   └── main.cpp
-├── 3_part_parallel                  # CUDA (GPU) implementation
-│   ├── main.cu
-│   ├── Parallel_Method.cu
-│   ├── Parallel_Mg.cu
-│   └── ParallelTestRunner.cu
-├── globals.cpp, globals.hpp        # Shared configuration and utility
-├── CMakeLists.txt                  # Build configuration
-├── build/                          # Created after compilation
+├── 1_part_Smoother_Comparison # Sequential solvers
+│ └── main.cpp
+├── 2_part_MG # Multigrid CPU implementation
+│ └── main.cpp
+├── 3_part_parallel # CUDA (GPU) implementation
+│ ├── main.cu
+│ ├── Parallel_Method.cu
+│ ├── Parallel_Mg.cu
+│ └── ParallelTestRunner.cu
+├── globals.cpp, globals.hpp # Shared configuration and utility
+├── CMakeLists.txt # Build configuration
+├── build/ # Created after compilation
 └── README.md
 
 ## Build Instructions
@@ -53,9 +54,9 @@ Open a terminal in the project root directory and run:
 
 This will compile three executables:
 
-- cpu_iterative_exec  — classic iterative solvers (Part 1)
-- mg_cpu_exec         — multigrid method (Part 2)
-- gpu_exec            — parallel multigrid with CUDA (Part 3)
+- cpu_iterative_exec — classic iterative solvers (Part 1)
+- mg_cpu_exec — multigrid method (Part 2)
+- gpu_exec — parallel multigrid with CUDA (Part 3)
 
 ## Running the Executables
 
@@ -88,8 +89,8 @@ The LaTeX project report includes:
 
 ## Authors
 
-- Francesco Virgulti  
-- Laura Gioanna Paxton  
+- Francesco Virgulti
+- Laura Gioanna Paxton
 - Supervisor: Emile Parolin
 
 ## License
