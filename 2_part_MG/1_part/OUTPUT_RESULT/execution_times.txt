@@ -1,0 +1,4 @@
+Jacobi: 0 s
+Gauss-Seidel: 0 s
+Conjugate Gradient: 0.648514 s
+Steepest Descent: 0 s
